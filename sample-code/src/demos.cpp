@@ -60,6 +60,24 @@
 // Our demonstrations of various EVE functions
 #include "demos.h"
 //===========================================================================
+#if (0 != TEXT_DEMO)
+  void draw_demo(){
+    EVE_REG_Write_32(EVE_RAM_DL + 0, EVE_ENC_CLEAR(1, 1, 1));
+    EVE_REG_Write_32(EVE_RAM_DL + 4, EVE_ENC_BEGIN(EVE_BEGIN_BITMAPS)); // start drawing bitmaps
+    EVE_REG_Write_32(EVE_RAM_DL + 8, EVE_ENC_VERTEX2II(220, 110, 31, 'T')); // ASCII T in font 31
+    EVE_REG_Write_32(EVE_RAM_DL + 12,EVE_ENC_VERTEX2II(244, 110, 31, 'E')); // ASCII E in font 31
+    EVE_REG_Write_32(EVE_RAM_DL + 16, EVE_ENC_VERTEX2II(270, 110, 31, 'X')); // ASCII X in font 31
+    EVE_REG_Write_32(EVE_RAM_DL + 20, EVE_ENC_VERTEX2II(299, 110, 31, 'T')); // ASCII T in font 31
+    EVE_REG_Write_32(EVE_RAM_DL + 24, EVE_ENC_END());
+    EVE_REG_Write_32(EVE_RAM_DL + 28, EVE_ENC_COLOR_RGB(160, 22, 22)); // change colour to red
+    EVE_REG_Write_32(EVE_RAM_DL + 32, EVE_ENC_POINT_SIZE(320)); // set point size to 20 pixels in radius
+    EVE_REG_Write_32(EVE_RAM_DL + 36, EVE_ENC_BEGIN(EVE_BEGIN_POINTS)); // start drawing points
+    EVE_REG_Write_32(EVE_RAM_DL + 40, EVE_ENC_VERTEX2II(192, 133, 0, 0)); // red point
+    EVE_REG_Write_32(EVE_RAM_DL + 44, EVE_ENC_END());
+    EVE_REG_Write_32(EVE_RAM_DL + 48, EVE_ENC_DISPLAY()); // display the image
+  };
+#endif //TEXT_DEMO
+
 #if (0 != PROGRAM_FLASH_FROM_USD)
 uint16_t Initialize_Flash_From_uSD(uint16_t FWol,
                                    uint32_t RAM_G_Unused_Start,
@@ -210,6 +228,8 @@ uint16_t Add_Touch_Dot_To_Display_List(uint16_t FWol,
   }
 #endif //TOUCH_DEMO
 //===========================================================================
+
+
 #if (0 != BMP_DEMO)
 //For a static background image, set BMP_SCROLL to 0
 //We will select the file name based on that.

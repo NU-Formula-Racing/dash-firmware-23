@@ -32,6 +32,9 @@
 //
 //For more information, please refer to <http://unlicense.org/>
 //============================================================================
+#if (0 != TEXT_DEMO)
+  void draw_demo();
+#endif //TEXT_DEMO
 #if (0 != PROGRAM_FLASH_FROM_USD)
 uint16_t Initialize_Flash_From_uSD(uint16_t FWol,
                                    uint32_t RAM_G_Unused_Start,

@@ -78,7 +78,7 @@
 #define LOGO_DEMO            (1)  //Rotating logo (the PNG or ARGB image
                                   //data is stored in the Seeeduino's flash)
 #define LOGO_PNG_0_ARGB2_1   (1)  //Compressed ARGB is 5408 bytes smaller
-#define BOUNCE_DEMO          (0)  //Ball-and-rubber-band demo.
+#define BOUNCE_DEMO          (1)  //Ball-and-rubber-band demo.
 #define MARBLE_DEMO          (1)  //Marble must already be programmed into
                                   //flash by using PROGRAM_FLASH_FROM_USD
                                   //(bluemarb.a8z)
@@ -86,6 +86,7 @@
 #define VIDEO_DEMO           (0)  //Video must already be programmed into
                                   //flash by using PROGRAM_FLASH_FROM_USD
                                   //(Ice_400.avi)
+#define TEXT_DEMO             (1)
 //
 // These should have been copied from the debug console when
 // you built with PROGRAM_FLASH_FROM_USD set
