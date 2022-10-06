@@ -508,7 +508,7 @@ void loop()
 
 #if (0 != BOUNCE_DEMO)
     //========== MOVE THE BALL AND CYCLE COLOR AND TRANSPARENCY ==========
-    Bounce_Ball();
+    // Bounce_Ball();
 #endif //(0 != BOUNCE_DEMO)
 
 #if (0 != MARBLE_DEMO)

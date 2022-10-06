@@ -689,201 +689,209 @@ void Initialize_Bounce_Demo(void)
 //---------------------------------------------------------------------------
 uint16_t Add_Bounce_To_Display_List(uint16_t FWol)
   {
+
+  // const char line[] = "hi isabel";
   // Set the variable color of the bouncing ball
   FWol=EVE_Cmd_Dat_0(FWol,
                      EVE_ENC_COLOR_RGB(r,g,b));
-  // Make it transparent
-  FWol=EVE_Cmd_Dat_0(FWol,
-                     EVE_ENC_COLOR_A(transparency));
+  // // Make it transparent
+  // FWol=EVE_Cmd_Dat_0(FWol,
+  //                    EVE_ENC_COLOR_A(transparency));
 
   // Draw the ball -- a point (filled circle)
-  FWol=EVE_Point(FWol,
-                 x_position,y_position,ball_size);
+  FWol=EVE_PrintF(FWol,
+                  LCD_WIDTH/2,
+                  LCD_HEIGHT/2,
+                  25,  //font
+                  EVE_OPT_CENTER,
+                  "Hi Isabel");
 
   //========== RUBBER BAND TETHER ==========
   //Draw the rubberband.
   //Maximum stretched would be LCD_WIDTH/2 + LCD_WIDTH/2 (manhatten) make that
   //1 pixels wide, make the minimum 10 pixels wide
-  uint16_t
-    rubberband_width;
-  uint16_t
-    x_distance;
-  if((x_position/16)<(LCD_WIDTH/2))
-    x_distance=(LCD_WIDTH/2)-(x_position/16);
-  else
-    x_distance=(x_position/16)-(LCD_WIDTH/2);
-  uint16_t
-    y_distance;
-  if((y_position/16)<(LCD_HEIGHT/2))
-    y_distance=(LCD_HEIGHT/2)-(y_position/16);
-  else
-    y_distance=(y_position/16)-(LCD_HEIGHT/2);
+
+
+  // uint16_t
+  //   rubberband_width;
+  // uint16_t
+  //   x_distance;
+  // if((x_position/16)<(LCD_WIDTH/2))
+  //   x_distance=(LCD_WIDTH/2)-(x_position/16);
+  // else
+  //   x_distance=(x_position/16)-(LCD_WIDTH/2);
+  // uint16_t
+  //   y_distance;
+  // if((y_position/16)<(LCD_HEIGHT/2))
+  //   y_distance=(LCD_HEIGHT/2)-(y_position/16);
+  // else
+  //   y_distance=(y_position/16)-(LCD_HEIGHT/2);
 
   //Straight math does not make it skinny enough. This seems like it should
   //underlow often, but in real life never goes below 1. Need to dissect.
-  rubberband_width=10-((9+1)*(x_distance+y_distance))/((LCD_WIDTH/2)+(LCD_HEIGHT/2));
-  //Check for underflow just in case.
-  if(rubberband_width&0x8000)
-    rubberband_width=1;
+  // rubberband_width=10-((9+1)*(x_distance+y_distance))/((LCD_WIDTH/2)+(LCD_HEIGHT/2));
+  // //Check for underflow just in case.
+  // if(rubberband_width&0x8000)
+  //   rubberband_width=1;
 
-  //Now that we know the rubberband width, drawing it is simple.
-  FWol=EVE_Cmd_Dat_0(FWol,
-                     EVE_ENC_COLOR_RGB(200,0,0));
-  //(transparency set above still in effect)
-  FWol=EVE_Line(FWol,
-                LCD_WIDTH/2,LCD_HEIGHT/2,
-                x_position/16,y_position/16,
-                rubberband_width);
+  // //Now that we know the rubberband width, drawing it is simple.
+  // FWol=EVE_Cmd_Dat_0(FWol,
+  //                    EVE_ENC_COLOR_RGB(200,0,0));
+  // //(transparency set above still in effect)
+  // FWol=EVE_Line(FWol,
+  //               LCD_WIDTH/2,LCD_HEIGHT/2,
+  //               x_position/16,y_position/16,
+  //               rubberband_width);
   return(FWol);
   }
 //---------------------------------------------------------------------------
-void Bounce_Ball(void)
-  {
-  //Update the colors
-  r++;
-  g--;
-  b+=2;
+// void Bounce_Ball(void)
+//   {
+//   //Update the colors
+//   r++;
+//   g--;
+//   b+=2;
 
-  //Cycle the transparancy
-  if(transparency_direction)
-    {
-    //Getting more solid
-    if(transparency!=255)
-      {
-      transparency++;
-      }
-    else
-      {
-      transparency_direction=0;
-      }
-    }
-  else
-    {
-    //Getting more clear
-    if(128<transparency)
-      {
-      transparency--;
-      }
-    else
-      {
-      transparency_direction=1;
-      }
-    }
+//   //Cycle the transparancy
+//   if(transparency_direction)
+//     {
+//     //Getting more solid
+//     if(transparency!=255)
+//       {
+//       transparency++;
+//       }
+//     else
+//       {
+//       transparency_direction=0;
+//       }
+//     }
+//   else
+//     {
+//     //Getting more clear
+//     if(128<transparency)
+//       {
+//       transparency--;
+//       }
+//     else
+//       {
+//       transparency_direction=1;
+//       }
+//     }
 
-  //========== BOUNCE THE BALL AROUND ==========
+//   //========== BOUNCE THE BALL AROUND ==========
 
-  #define MIN_POINT_SIZE (10*16)
-//  #define MAX_POINT_SIZE (int32_t)(((LCD_WIDTH/2)-20)*16)
-  #define MAX_POINT_SIZE (int32_t)(((LCD_HEIGHT/2)-20)*16)
+//   #define MIN_POINT_SIZE (10*16)
+// //  #define MAX_POINT_SIZE (int32_t)(((LCD_WIDTH/2)-20)*16)
+//   #define MAX_POINT_SIZE (int32_t)(((LCD_HEIGHT/2)-20)*16)
 
-  //Change the point (ball) size.
-  if(ball_delta < 0)
-    {
-    //Getting smaller. OK to decrease again?
-    if(MIN_POINT_SIZE < (ball_size+ball_delta))
-      {
-      //it will be bigger than min after decrease
-      ball_size+=ball_delta;
-      }
-    else
-      {
-      //It would be too small, bounce.
-      ball_size=MIN_POINT_SIZE+(MIN_POINT_SIZE-(ball_size+ball_delta));
-      //Turn around.
-      ball_delta=-ball_delta;
-      }
-    }
-  else
-    {
-    //Getting larger. OK to increase again?
-    if((ball_size+ball_delta) < MAX_POINT_SIZE)
-      {
-      //it will be smaller than max after increase
-      ball_size+=ball_delta;
-      }
-    else
-      {
-      //It would be too big, bounce.
-      ball_size=MAX_POINT_SIZE-(MAX_POINT_SIZE-(ball_size+ball_delta));
-      //Turn around.
-      ball_delta=-ball_delta;
-      }
-    }
+//   //Change the point (ball) size.
+//   if(ball_delta < 0)
+//     {
+//     //Getting smaller. OK to decrease again?
+//     if(MIN_POINT_SIZE < (ball_size+ball_delta))
+//       {
+//       //it will be bigger than min after decrease
+//       ball_size+=ball_delta;
+//       }
+//     else
+//       {
+//       //It would be too small, bounce.
+//       ball_size=MIN_POINT_SIZE+(MIN_POINT_SIZE-(ball_size+ball_delta));
+//       //Turn around.
+//       ball_delta=-ball_delta;
+//       }
+//     }
+//   else
+//     {
+//     //Getting larger. OK to increase again?
+//     if((ball_size+ball_delta) < MAX_POINT_SIZE)
+//       {
+//       //it will be smaller than max after increase
+//       ball_size+=ball_delta;
+//       }
+//     else
+//       {
+//       //It would be too big, bounce.
+//       ball_size=MAX_POINT_SIZE-(MAX_POINT_SIZE-(ball_size+ball_delta));
+//       //Turn around.
+//       ball_delta=-ball_delta;
+//       }
+//     }
 
-  //Move X, bouncing
-  if(x_velocity < 0)
-    {
-    //Going left. OK to move again?
-    if(0 < (x_position-(ball_size)+x_velocity))
-      {
-      //it will be onscreen after decrease
-      x_position+=x_velocity;
-      }
-    else
-      {
-      //It would be too small, bounce.
-      x_position=ball_size+(ball_size-(x_position+x_velocity));
-      //Turn around.
-      x_velocity=-x_velocity;
-      }
-    }
-  else
-    {
-    //Getting larger. OK to increase again?
-    if((x_position+(ball_size)+x_velocity) < (int32_t)LCD_WIDTH*16)
-      {
-      //it will be on screen after increase
-      x_position+=x_velocity;
-      }
-    else
-      {
-      //It would be too big, bounce.
-      int32_t
-        max_x_ctr;
-      max_x_ctr=(int32_t)LCD_WIDTH*16-ball_size;
-      x_position=max_x_ctr-(max_x_ctr-(x_position+x_velocity));
-      //Turn around.
-      x_velocity=-x_velocity;
-      }
-    }
+//   //Move X, bouncing
+//   if(x_velocity < 0)
+//     {
+//     //Going left. OK to move again?
+//     if(0 < (x_position-(ball_size)+x_velocity))
+//       {
+//       //it will be onscreen after decrease
+//       x_position+=x_velocity;
+//       }
+//     else
+//       {
+//       //It would be too small, bounce.
+//       x_position=ball_size+(ball_size-(x_position+x_velocity));
+//       //Turn around.
+//       x_velocity=-x_velocity;
+//       }
+//     }
+//   else
+//     {
+//     //Getting larger. OK to increase again?
+//     if((x_position+(ball_size)+x_velocity) < (int32_t)LCD_WIDTH*16)
+//       {
+//       //it will be on screen after increase
+//       x_position+=x_velocity;
+//       }
+//     else
+//       {
+//       //It would be too big, bounce.
+//       int32_t
+//         max_x_ctr;
+//       max_x_ctr=(int32_t)LCD_WIDTH*16-ball_size;
+//       x_position=max_x_ctr-(max_x_ctr-(x_position+x_velocity));
+//       //Turn around.
+//       x_velocity=-x_velocity;
+//       }
+//     }
 
-  //Move Y, bouncing
-  if(y_velocity < 0)
-    {
-    //Going left. OK to move again?
-    if(0 < (y_position-(ball_size)+y_velocity))
-      {
-      //it will be onscreen after decrease
-      y_position+=y_velocity;
-      }
-    else
-      {
-      //It would be too small, bounce.
-      y_position=ball_size+(ball_size-(y_position+y_velocity));
-      //Turn around.
-      y_velocity=-y_velocity;
-      }
-    }
-  else
-    {
-    //Getting larger. OK to increase again?
-    if((y_position+(ball_size)+y_velocity) < (int32_t)LCD_HEIGHT*16)
-      {
-      //it will be on screen after increase
-      y_position+=y_velocity;
-      }
-    else
-      {
-      //It would be too big, bounce.
-      int32_t
-        max_y_ctr;
-      max_y_ctr=(int32_t)LCD_WIDTH*16-ball_size;
-      y_position=max_y_ctr-(max_y_ctr-(y_position+y_velocity));
-      //Turn around.
-      y_velocity=-y_velocity;
-      }
-    }
-  }
+//   //Move Y, bouncing
+//   if(y_velocity < 0)
+//     {
+//     //Going left. OK to move again?
+//     if(0 < (y_position-(ball_size)+y_velocity))
+//       {
+//       //it will be onscreen after decrease
+//       y_position+=y_velocity;
+//       }
+//     else
+//       {
+//       //It would be too small, bounce.
+//       y_position=ball_size+(ball_size-(y_position+y_velocity));
+//       //Turn around.
+//       y_velocity=-y_velocity;
+//       }
+//     }
+//   else
+//     {
+//     //Getting larger. OK to increase again?
+//     if((y_position+(ball_size)+y_velocity) < (int32_t)LCD_HEIGHT*16)
+//       {
+//       //it will be on screen after increase
+//       y_position+=y_velocity;
+//       }
+//     else
+//       {
+//       //It would be too big, bounce.
+//       int32_t
+//         max_y_ctr;
+//       max_y_ctr=(int32_t)LCD_WIDTH*16-ball_size;
+//       y_position=max_y_ctr-(max_y_ctr-(y_position+y_velocity));
+//       //Turn around.
+//       y_velocity=-y_velocity;
+//       }
+  //   }
+  // }
 #endif // (0 != BOUNCE_DEMO)
 //============================================================================
 #if (0 != LOGO_DEMO)

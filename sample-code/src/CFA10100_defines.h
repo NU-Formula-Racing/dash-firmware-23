@@ -68,18 +68,18 @@
 // Seeeduino / Arduino flash. The symptom will be a programming error
 // from AVRdude.
 //
-#define BMP_DEMO             (1)  //Images must already be programmed into
+#define BMP_DEMO             (0)  //Images must already be programmed into
                                   //flash by using PROGRAM_FLASH_FROM_USD
-#define   BMP_SCROLL         (1)  //1=scrolling background (cloud.a8z)
+#define   BMP_SCROLL         (0)  //1=scrolling background (cloud.a8z)
                                   //0=static image (splash.a8z)
 #define SOUND_DEMO           (0)  //Uses uSD
-#define   SOUND_VOICE        (1)  //1=VOI_8K.RAW, 0=MUS_8K.RAW
-#define   SOUND_PLAY_TIMES   (1)
-#define LOGO_DEMO            (1)  //Rotating logo (the PNG or ARGB image
+#define   SOUND_VOICE        (0)  //1=VOI_8K.RAW, 0=MUS_8K.RAW
+#define   SOUND_PLAY_TIMES   (0)
+#define LOGO_DEMO            (0)  //Rotating logo (the PNG or ARGB image
                                   //data is stored in the Seeeduino's flash)
-#define LOGO_PNG_0_ARGB2_1   (1)  //Compressed ARGB is 5408 bytes smaller
-#define BOUNCE_DEMO          (0)  //Ball-and-rubber-band demo.
-#define MARBLE_DEMO          (1)  //Marble must already be programmed into
+#define LOGO_PNG_0_ARGB2_1   (0)  //Compressed ARGB is 5408 bytes smaller
+#define BOUNCE_DEMO          (1)  //Ball-and-rubber-band demo.
+#define MARBLE_DEMO          (0)  //Marble must already be programmed into
                                   //flash by using PROGRAM_FLASH_FROM_USD
                                   //(bluemarb.a8z)
 #define TOUCH_DEMO           (1)
