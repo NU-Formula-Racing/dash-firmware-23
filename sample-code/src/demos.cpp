@@ -59,6 +59,8 @@
 
 // Our demonstrations of various EVE functions
 #include "demos.h"
+
+
 //===========================================================================
 #if (0 != PROGRAM_FLASH_FROM_USD)
 uint16_t Initialize_Flash_From_uSD(uint16_t FWol,
@@ -667,6 +669,7 @@ uint8_t
 //---------------------------------------------------------------------------
 void Initialize_Bounce_Demo(void)
   {
+  Serial.println("includes work");
   //Choose some starting color
   r=0xff;
   g=0x00;

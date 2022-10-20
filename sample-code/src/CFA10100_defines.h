@@ -82,7 +82,7 @@
 #define MARBLE_DEMO          (0)  //Marble must already be programmed into
                                   //flash by using PROGRAM_FLASH_FROM_USD
                                   //(bluemarb.a8z)
-#define TOUCH_DEMO           (1)
+#define TOUCH_DEMO           (0)
 #define VIDEO_DEMO           (0)  //Video must already be programmed into
                                   //flash by using PROGRAM_FLASH_FROM_USD
                                   //(Ice_400.avi)
@@ -134,7 +134,7 @@
 // Turn on uSD code if one of the demos above uses it, or we are programming
 // the flash from the uSD.
 #if ((0 != SOUND_DEMO) || (0 != BMP_DEMO) || (0 != MARBLE_DEMO) || (0 != PROGRAM_FLASH_FROM_USD))
-  #define BUILD_SD           (1)
+  #define BUILD_SD           (0)
 #else
   #define BUILD_SD           (0)
 #endif
@@ -153,31 +153,31 @@
 
 //Arduino style pin defines
 // Interrupt from EVE to Arduino - input, not used in this example.
-#define EVE_INT     (7)
+#define EVE_INT     (14)
 // PD_N from Arduino to EVE - effectively EVE reset
-#define EVE_PD_NOT  (8)
+#define EVE_PD_NOT  (9)
 // SPI chip select - defined separately since it's manipulated with GPIO calls
-#define EVE_CS_NOT  (9)
+#define EVE_CS_NOT  (10)
 // Reserved for use with the SD card library
-#define SD_CS       (10)
+#define SD_CS       (99)
 // Debug LED, or used for scope trigger or precise timing
 #define DEBUG_LED   (3)
 
 //Faster direct port access (specific to AVR)
-#define CLR_EVE_PD_NOT        (PORTB &= ~(0x01))
-#define SET_EVE_PD_NOT        (PORTB |=  (0x01))
-#define CLR_EVE_CS_NOT        (PORTB &= ~(0x02))
-#define SET_EVE_CS_NOT        (PORTB |=  (0x02))
-#define CLR_SD_CS_NOT         (PORTB &= ~(0x04))
-#define SET_SD_CS_NOT         (PORTB |=  (0x04))
-#define CLR_MOSI              (PORTB &= ~(0x08))
-#define SET_MOSI              (PORTB |=  (0x08))
-#define CLR_MISO              (PORTB &= ~(0x10))
-#define SET_MISO              (PORTB |=  (0x10))
-#define CLR_SCK               (PORTB &= ~(0x20))
-#define SET_SCK               (PORTB |=  (0x20))
-#define CLR_DEBUG_LED         (PORTD &= ~(0x08))
-#define SET_DEBUG_LED         (PORTD |=  (0x08))
+#define CLR_EVE_PD_NOT        (digitalWrite(EVE_PD_NOT, LOW))
+#define SET_EVE_PD_NOT        (digitalWrite(EVE_PD_NOT, HIGH))
+#define CLR_EVE_CS_NOT        (digitalWrite(EVE_CS_NOT, LOW))
+#define SET_EVE_CS_NOT        (digitalWrite(EVE_PD_NOT, HIGH))
+// #define CLR_SD_CS_NOT         (digitalWrite(SD_CS_NOT, LOW))
+// #define SET_SD_CS_NOT         (digitalWrite(SD_CS_NOT, HIGH))
+#define CLR_MOSI              (digitalWrite(MOSI, LOW))
+#define SET_MOSI              (digitalWrite(MOSI, HIGH))
+#define CLR_MISO              (digitalWrite(MISO, LOW))
+#define SET_MISO              (digitalWrite(MISO, HIGH))
+#define CLR_SCK               (digitalWrite(SCK, LOW))
+#define SET_SCK               (digitalWrite(SCK, HIGH))
+#define CLR_DEBUG_LED         (digitalWrite(DEBUG_LED, LOW))
+#define SET_DEBUG_LED         (digitalWrite(DEBUG_LED, HIGH))
 //============================================================================
 // These defines describe the circuit board and EVE accelerator. Typically
 // you will want to use these directly and not mess with them.

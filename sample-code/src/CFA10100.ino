@@ -124,7 +124,7 @@ void setup()
   SET_EVE_CS_NOT;
   // Set PD# high to start
   SET_EVE_PD_NOT;
-  SET_SD_CS_NOT;
+  // SET_SD_CS_NOT;
 
   //Initialize port directions
   // EVE interrupt output (not used in this example)

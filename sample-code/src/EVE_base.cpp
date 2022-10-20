@@ -1195,23 +1195,23 @@ void Force_Touch_Matrix(void)
   //In a final application the end user should have the
   //ability to preform a tocuh calibration which should be
   //stored as the new touch_transform[] matrix.
-  const int32_t touch_transform[6] PROGMEM =
-    {
-    (int32_t)0x0000FFBD, // [A] =     0.9990
-    (int32_t)0xFFFFFE55, // [B] =    -0.0065
-    (int32_t)0x00085DC6, // [C] =     8.3663
-    (int32_t)0xFFFFFF00, // [D] =    -0.0039
-    (int32_t)0x0000F08D, // [E] =     0.9397
-    (int32_t)0x0005FF21  // [F] =     5.9966
-    };   
+  // const int32_t touch_transform[6] PROGMEM =
+  //   {
+  //   (int32_t)0x0000FFBD, // [A] =     0.9990
+  //   (int32_t)0xFFFFFE55, // [B] =    -0.0065
+  //   (int32_t)0x00085DC6, // [C] =     8.3663
+  //   (int32_t)0xFFFFFF00, // [D] =    -0.0039
+  //   (int32_t)0x0000F08D, // [E] =     0.9397
+  //   (int32_t)0x0005FF21  // [F] =     5.9966
+  //   };   
 #endif
 
-  EVE_REG_Write_32(EVE_REG_TOUCH_TRANSFORM_A,touch_transform[0]);
-  EVE_REG_Write_32(EVE_REG_TOUCH_TRANSFORM_B,touch_transform[1]);
-  EVE_REG_Write_32(EVE_REG_TOUCH_TRANSFORM_C,touch_transform[2]);
-  EVE_REG_Write_32(EVE_REG_TOUCH_TRANSFORM_D,touch_transform[3]);
-  EVE_REG_Write_32(EVE_REG_TOUCH_TRANSFORM_E,touch_transform[4]);
-  EVE_REG_Write_32(EVE_REG_TOUCH_TRANSFORM_F,touch_transform[5]);
+  // EVE_REG_Write_32(EVE_REG_TOUCH_TRANSFORM_A,touch_transform[0]);
+  // EVE_REG_Write_32(EVE_REG_TOUCH_TRANSFORM_B,touch_transform[1]);
+  // EVE_REG_Write_32(EVE_REG_TOUCH_TRANSFORM_C,touch_transform[2]);
+  // EVE_REG_Write_32(EVE_REG_TOUCH_TRANSFORM_D,touch_transform[3]);
+  // EVE_REG_Write_32(EVE_REG_TOUCH_TRANSFORM_E,touch_transform[4]);
+  // EVE_REG_Write_32(EVE_REG_TOUCH_TRANSFORM_F,touch_transform[5]);
   }
 #endif // ((EVE_TOUCH_TYPE!=EVE_TOUCH_NONE) && (0 == EVE_TOUCH_CAL_NEEDED))
 //============================================================================
