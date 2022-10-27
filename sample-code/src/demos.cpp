@@ -707,7 +707,7 @@ uint16_t Add_Bounce_To_Display_List(uint16_t FWol)
                   LCD_HEIGHT/2,
                   25,  //font
                   EVE_OPT_CENTER,
-                  "Hi Isabel");
+                  "PLLLEEEEAAAASSSEEEE WORK");
 
   //========== RUBBER BAND TETHER ==========
   //Draw the rubberband.

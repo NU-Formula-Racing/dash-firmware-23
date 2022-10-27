@@ -1279,7 +1279,6 @@ uint8_t EVE_Initialize(void)
     received_register;
   while(0x7C != (received_register=EVE_REG_Read_8(EVE_REG_ID)))
     {
-    while (1) {};
     timeout++;
     if(250 <= timeout)
       {
@@ -1294,7 +1293,7 @@ uint8_t EVE_Initialize(void)
       }
     }
   DBG_GEEK("Polled EVE_REG_ID register %d times.\n",timeout);
-  while (1) {};
+  
   //Poll EVE_REG_CPURESET until it returns 0, meaning that the reset is complete
   timeout=0;
 
