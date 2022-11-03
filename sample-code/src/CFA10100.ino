@@ -9,7 +9,7 @@
 #include "EVE_draw.h"
 
 // Our demonstrations of various EVE functions
-#include "demos.h"
+#include "dash.h"
 
 void setup() {
 #if (DEBUG_LEVEL != DEBUG_NONE)
@@ -80,8 +80,8 @@ void loop() {
 
   DBG_GEEK("Not programming flash.\n");
 
-  DBG_STAT("Initialize_Bounce_Demo() . . .");
-  Initialize_Bounce_Demo();
+  DBG_STAT("Initializing Dash...");
+  InitializeDash();
   DBG_STAT(" done.\n");
 
   DBG_STAT("Initialization complete, entering main loop.\n");
@@ -99,13 +99,9 @@ void loop() {
     FWo = EVE_Cmd_Dat_0(FWo, EVE_ENC_CLEAR(1, 1, 1));
     
     //Fill background with white
-    FWo = EVE_Filled_Rectangle(
-      FWo,
-      0, 0,
-      LCD_WIDTH - 1, LCD_HEIGHT - 1
-    );
+    FWo = EVE_Filled_Rectangle(FWo, 0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1);
     
-    FWo = Add_Bounce_To_Display_List(FWo);
+    FWo = AddDashToDisplayList(FWo);
 
     // Show the display list
     FWo = EVE_Cmd_Dat_0(FWo, EVE_ENC_DISPLAY());
