@@ -13,7 +13,6 @@
 #include "virtualTimer.h"
 
 TeensyCAN<1> can_bus{};
-VirtualTimerGroup timer_group{};
 
 // Receive a uint8_t over CAN
 const uint8_t kPdrStart = 0;
@@ -33,19 +32,25 @@ CANSignal<
 
 CANRXMessage<1> rx_message{can_bus, kPdrMsgID, can_rx_test};
 
-uint8_t r = 0xff;
-uint8_t g = 0x00;
-uint8_t b = 0x80;
-uint8_t display_value = 0;
+uint8_t r;
+uint8_t g;
+uint8_t b;
+uint8_t display_value;
 
 void GetCAN() {
-  display_value = can_rx_test;
-  can_bus.Tick();
+  // display_value = can_rx_test;
+  // can_bus.Tick();
+  display_value++;
 }
+VirtualTimer can_timer(1000U, GetCAN, VirtualTimer::Type::kRepeating);
 
 void InitializeDash(void) {
   can_bus.Initialize(kPdrBaud);
-  timer_group.AddTimer(1000, GetCAN);
+  r = 0xff;
+  g = 0x00;
+  b = 0x80;
+  display_value = 0;
+  can_timer.Start(millis());
 }
 
 uint16_t AddDashToDisplayList(uint16_t FWol) {
@@ -59,6 +64,8 @@ uint16_t AddDashToDisplayList(uint16_t FWol) {
     "%d",
     display_value
   );
+
+  can_timer.Tick(millis());
 
   return(FWol);
 }
