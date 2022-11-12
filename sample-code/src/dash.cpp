@@ -14,43 +14,28 @@
 
 TeensyCAN<1> can_bus{};
 
-// Receive a uint8_t over CAN
-const uint8_t kPdrStart = 0;
-const int kPdrFactor = 0;
-const int kPdrOffset = 0;
-const int kPdrMsgID = 0x100;
-const ICAN::BaudRate kPdrBaud = ICAN::BaudRate::kBaud1M;
+VirtualTimerGroup timer_group{};
 
-CANSignal<
-  uint8_t,
-  kPdrStart,
-  8,
-  CANTemplateConvertFloat(kPdrFactor),
-  CANTemplateConvertFloat(kPdrOffset),
-  false
-> can_rx_test;
+CANSignal<uint32_t, 0, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> can_rx_test;
 
-CANRXMessage<1> rx_message{can_bus, kPdrMsgID, can_rx_test};
+CANRXMessage<1> rx_message{can_bus, 0x100, can_rx_test};
 
 uint8_t r;
 uint8_t g;
 uint8_t b;
-uint8_t display_value;
 
 void GetCAN() {
-  // display_value = can_rx_test;
-  // can_bus.Tick();
-  display_value++;
+  can_bus.Tick();
 }
-VirtualTimer can_timer(1000U, GetCAN, VirtualTimer::Type::kRepeating);
 
 void InitializeDash(void) {
-  can_bus.Initialize(kPdrBaud);
+  can_bus.Initialize(ICAN::BaudRate::kBaud1M);
+  can_bus.RegisterRXMessage(rx_message);  // Temporary workaround
   r = 0xff;
   g = 0x00;
   b = 0x80;
-  display_value = 0;
-  can_timer.Start(millis());
+
+  timer_group.AddTimer(10, GetCAN);
 }
 
 uint16_t AddDashToDisplayList(uint16_t FWol) {
@@ -62,10 +47,10 @@ uint16_t AddDashToDisplayList(uint16_t FWol) {
     25, // font size
     EVE_OPT_CENTER,
     "%d",
-    display_value
+    uint32_t(can_rx_test)
   );
 
-  can_timer.Tick(millis());
+  timer_group.Tick(millis());
 
   return(FWol);
 }
