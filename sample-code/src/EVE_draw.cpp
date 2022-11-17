@@ -35,12 +35,6 @@
 #include <stdarg.h>
 // Definitions for our circuit board and display.
 #include "CFA10100_defines.h"
-// Transparent Logo
-#include "Round_Logos.h"
-
-#if BUILD_SD
-#include <SD.h>
-#endif
 
 // The very simple EVE library files
 #include "EVE_defines.h"
@@ -145,7 +139,6 @@ uint16_t EVE_Text(uint16_t FWol,
   {
 //There is some interaction between the video
 //and the text.
-#if (0 == VIDEO_DEMO)
 
 //void Gpu_CoCmd_Text(Gpu_Hal_Context_t *phost,int16_t x, int16_t y, int16_t font, uint16_t options, const char8_t* s)
 //  {
@@ -207,8 +200,6 @@ uint16_t EVE_Text(uint16_t FWol,
   
   //De-select the EVE
   SET_EVE_CS_NOT;
-
-#endif // (0 == VIDEO_DEMO)
   
   //Give the updated write pointer back to the caller
   return(FWol);
@@ -420,151 +411,7 @@ uint16_t Calibrate_Touch(uint16_t FWol)
   FWol=Wait_for_EVE_Execution_Complete(FWol);
   return(FWol);
   }
-//===========================================================================
-#if (1==LOGO_DEMO)
-#if (0==LOGO_PNG_0_ARGB2_1)
-uint16_t EVE_Load_PNG_to_RAM_G(uint16_t FWol,
-                               const uint8_t *PNG_data,
-                               uint32_t PNG_length,
-                               uint32_t *RAM_G_Address,
-                               uint32_t *Image_Width,
-                               uint32_t *Image_Height)
-  {
-  //Load+expand our PNG into RAM_G
-  //Tip of the hat to: https://www.mikrocontroller.net/topic/395608
-
-  //Before we get too carried away, let's check to see if it will fit.
-  //First calculate the uncompressed size. It appears that the dimensions
-  //always show up at the same offsets in the file, since the IHDR is
-  //always first, and the dimensions are first in the IHDR.
-  //
-  //Get the width from the PNG (Look ma, no locals, no shifts.)
-  ((uint8_t *)(Image_Width))[0]=pgm_read_byte(PNG_data+16+3);
-  ((uint8_t *)(Image_Width))[1]=pgm_read_byte(PNG_data+16+2);
-  ((uint8_t *)(Image_Width))[2]=pgm_read_byte(PNG_data+16+1);
-  ((uint8_t *)(Image_Width))[3]=pgm_read_byte(PNG_data+16+0);
-  //Get the height from the PNG
-  ((uint8_t *)(Image_Height))[0]=pgm_read_byte(PNG_data+20+3);
-  ((uint8_t *)(Image_Height))[1]=pgm_read_byte(PNG_data+20+2);
-  ((uint8_t *)(Image_Height))[2]=pgm_read_byte(PNG_data+20+1);
-  ((uint8_t *)(Image_Height))[3]=pgm_read_byte(PNG_data+20+0);
-  //We know that the EVE will uncompress the image as a R5G6B5 image
-  //(16-bits per pixel) into RAM_G, so we can calculate the amount
-  //of RAMG we will use.
-  uint32_t
-    RAM_G_Needed;
-  RAM_G_Needed=((*Image_Width)*(*Image_Height))<<1;
-
-  //See if there is room
-  if((EVE_RAM_G_SIZE - *RAM_G_Address) < RAM_G_Needed)
-    {
-    DBG_STAT("EVE_Load_PNG_to_RAM_G(): Image is %lu bytes long, but only %lu are available.\n",
-              RAM_G_Needed,EVE_RAM_G_SIZE-(*RAM_G_Address));
-    //Bail out with the address unchanged.
-    return(FWol);
-    }
-
-  //Write the CMD_LOADIMAGE and parameters
-  FWol=EVE_Cmd_Dat_2(FWol,
-                     //The command
-                     EVE_ENC_CMD_LOADIMAGE,
-                     //First is 32-bit RAM_G offset.
-                     *RAM_G_Address,
-                     //Second is the PNG options.
-                     EVE_OPT_NODL);
-
-  //We need to ensure 4-byte alignment.
-  PNG_length=(PNG_length+0x03)&0xFFFFFFFC;
-
-  //Pipe out PNG_length of data from PNG_data. Use chunks so we
-  //can handle images larger than 4K.
-  while(0 != PNG_length)
-    {
-    //What is the maximum we can transfer in this block?
-    uint32_t
-      bytes_this_block;
-    uint32_t
-      bytes_free;
-
-    //See how much room is available in the EVE_RAM_CMD
-    bytes_free=Get_Free_CMD_Space(FWol);
-
-    DBG_GEEK("EVE_Load_PNG_to_RAM_G(): PNG_length= %lu bytes_free = %lu ",PNG_length,bytes_free);
-
-    if(PNG_length <= bytes_free)
-      {
-      //Everything will fit in the available space.
-      bytes_this_block=PNG_length;
-      }
-    else
-      {
-      //It won't all fit, transfer the maximum amount.
-      bytes_this_block=bytes_free;
-      }
-    DBG_GEEK("bytes_this_block = %lu \n",bytes_this_block);
-
-    //Set the address in EVE_RAM_CMD for this block
-    _EVE_Select_and_Address((uint32_t)EVE_RAM_CMD|(uint32_t)FWol,
-                              EVE_MEM_WRITE);
-
-    // Keep track that we are about to send bytes_this_block bytes.
-    FWol=(FWol+bytes_this_block)&0xFFF;
-    PNG_length-=bytes_this_block;
-
-    while(0!=bytes_this_block)
-      {
-      SPI.transfer(pgm_read_byte(PNG_data));
-      PNG_data++;
-      bytes_this_block--;
-      }
-    //Now we need to end this command.
-    SET_EVE_CS_NOT;
-    //OK, the data is in the EVE_RAM_CMD circular buffer, ask the chip
-    //to process it.
-    EVE_REG_Write_16(EVE_REG_CMD_WRITE, FWol);
-    //Now wait for it to catch up
-    FWol=Wait_for_EVE_Execution_Complete(FWol);
-    }
-
-  //Mark this block of RAM_G used in the callers varaible.
-  *RAM_G_Address+=RAM_G_Needed;
-
-  //To be safe, force RAM_G_Address to be 8-byte aligned (maybe not
-  //needed, certainly does not hurt).
-  *RAM_G_Address=(*RAM_G_Address+0x07)&0xFFFFFFF8;
-
-  //Use a read-back to verify what we already calculated
-  uint32_t
-    Read_Back_RAM_G_First_Available;
-  uint32_t
-    Read_Back_Width;
-  uint32_t
-    Read_Back_Height;
-
-  //Now go figure out what we did.
-  FWol=
-    Get_RAM_G_Properties_After_LOADIMAGE(FWol,
-                                         &Read_Back_RAM_G_First_Available,
-                                         &Read_Back_Width,
-                                         &Read_Back_Height);
-  if((*RAM_G_Address!=Read_Back_RAM_G_First_Available)||
-     (*Image_Width!=Read_Back_Width)||
-     (*Image_Height!=Read_Back_Height))
-    {
-    DBG_STAT("EVE_Load_PNG_to_RAM_G(): Read-back Error.\n");
-    DBG_STAT("  Calc RAM_G %lu Read Back RAM_G = %lu\n",
-                 *RAM_G_Address,Read_Back_RAM_G_First_Available);
-    DBG_STAT("  Calc Wide %lu Read Back Wide = %lu\n",
-                 *Image_Width,Read_Back_Width);
-    DBG_STAT("  Calc High %lu Read Back High = %lu\n",
-                 *Image_Height,Read_Back_Height);
-    }
-
-  //Return the updated address
-  return(FWol);
-  }
-#endif // (0==LOGO_PNG_0_ARGB2_1)
-#endif // (1==LOGO_DEMO)
+  
 //===========================================================================
 //#if (1==LOGO_PNG_0_ARGB2_1)
 uint16_t EVE_Inflate_to_RAM_G(uint16_t FWol,
@@ -644,81 +491,4 @@ uint16_t EVE_Inflate_to_RAM_G(uint16_t FWol,
   //Return the updated address
   return(FWol);
   }
-//#endif // (1==LOGO_PNG_0_ARGB2_1)
-//#endif // (1==LOGO_DEMO)
-//============================================================================
-#if BUILD_SD
-// This reads a file from the uSD card and writes it directly
-// into RAM_G, not bothering with the command processor.
-//---------------------------------------------------------------------------
-void EVE_Load_File_To_RAM_G(uint32_t RAM_G_Address,
-                            const char *File_Name,
-                            uint32_t *RAM_G_Used)
-  {
-  DBG_GEEK("\n");
-  File
-    binary_file;
-  binary_file = SD.open(File_Name,FILE_READ);    
-  if(0 == binary_file)
-    {
-    DBG_STAT("  EVE_Load_File_To_RAM_G(): Can't open \"%s\".\n",File_Name);
-    return;
-    }
-
-  //Here would be a good place to do sanity checks with the size
-  //of the file vs remaining RAM_G space. You would have to pass
-  //in the available RAM_G.
-  uint32_t
-    bytes_remaining;
-  bytes_remaining=binary_file.size();
-  DBG_GEEK("  EVE_Load_File_To_RAM_G: found %s size: %lu\n",
-           binary_file.name(),binary_file.size());
-  //Inform our caller of how much of their RAM_G we are soaking up.
-  *RAM_G_Used=bytes_remaining;
-  //Limited RAM on the Arduino, so use a reasonable block size
-  #define CHUNK_SIZE (256)
-  uint8_t
-    this_chunk[CHUNK_SIZE];
-  do
-    {
-    //chunk loop
-    //Transfer a full chunk, or a partial chunk on the
-    //last transfer.
-    uint16_t
-      this_chunk_size;
-    if(bytes_remaining<CHUNK_SIZE)
-      {
-      this_chunk_size=bytes_remaining;
-      }
-    else
-      {
-      this_chunk_size=CHUNK_SIZE;
-      }
-    //Fill this_chunk from the uSD
-    binary_file.read(this_chunk,this_chunk_size);
-    //Keep track of bytes_remaining. This frees up this_chunk_size
-    //so we can use it as a byte counter below.
-    bytes_remaining-=this_chunk_size;
-
-    //Now write this_chunk_size bytes of this_chunk[] to
-    //the EVE RAM_G
-
-    //Select the EVE and send the 24-bit address and operation flag.
-    _EVE_Select_and_Address(RAM_G_Address,EVE_MEM_WRITE);
-
-    //Remember that we put this_chunk_size data in RAM_G
-    RAM_G_Address+=this_chunk_size;
-
-    //Pipe out this_chunk_size of data from this_chunk[]
-    //to the EVE.
-    SPI.transfer(this_chunk,this_chunk_size);
-
-    //De-select the EVE
-    SET_EVE_CS_NOT;
-    } // chunk loop
-  while(0 != bytes_remaining);
-  //Release the BMP file handle
-  binary_file.close();
-  }
-#endif
-//============================================================================
+  

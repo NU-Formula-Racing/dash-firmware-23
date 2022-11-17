@@ -1,128 +1,10 @@
 #ifndef __CFA10100_DEFINES_H__
 #define __CFA10100_DEFINES_H__
-//============================================================================
-//
-// Definitions specific to the EVE accelerated CFA10100 board.
-// (cap-touch) https://www.crystalfontz.com/product/ . . .
-//
-// 2020-08-05 Brent A. Crosby / Crystalfontz America, Inc.
-// https://www.crystalfontz.com/products/eve-accelerated-tft-displays.php
-//===========================================================================
-//This is free and unencumbered software released into the public domain.
-//
-//Anyone is free to copy, modify, publish, use, compile, sell, or
-//distribute this software, either in source code form or as a compiled
-//binary, for any purpose, commercial or non-commercial, and by any
-//means.
-//
-//In jurisdictions that recognize copyright laws, the author or authors
-//of this software dedicate any and all copyright interest in the
-//software to the public domain. We make this dedication for the benefit
-//of the public at large and to the detriment of our heirs and
-//successors. We intend this dedication to be an overt act of
-//relinquishment in perpetuity of all present and future rights to this
-//software under copyright law.
-//
-//THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-//EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-//MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-//IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-//OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-//ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-//OTHER DEALINGS IN THE SOFTWARE.
-//
-//For more information, please refer to <http://unlicense.org/>
-//============================================================================
-// First we need to define the particular EVE chip that we have.
+
 #define EVE_DEVICE           (BT817)
-// Now that the device is set, we can include the master (monster) EVE
-// definitions header:
+
 #include "EVE_defines.h"
-//============================================================================
-// You can enable/disable the different demos here.
-// There is not enough RAM_G space to hold all of the scrolling background,
-// logo, audio, and blue marble at the same time. However with the BT817,
-// we can load elements into the flash from the uSD (once) and then we
-// do not need the uSD any more. Elements could also be loaded into the
-// flash by using some PC host and the Eve Asset Builder tools provided by
-// Bridgetek. Some elements can then be displated directly from flash, other
-// elements (notably the rotating blue marble) need to be copied to the
-// faster RAM_G before dispalying them.
-//
-// You would want to set this once, with the uSD card loaded with the 
-// appropriate files to program those images into the flash:
-// 
-// bluemarb.a8z      12,665
-// splash.a8z       135,852
-// cloud.a8z        132,455
-// Ice_400.avi   12,882,892
-//
-// Once that step is complete, the uSD card should not be needed and may be removed.
-//
-#define PROGRAM_FLASH_FROM_USD (0)  //uses uSD
-//
-//
-//
-#if (0 == PROGRAM_FLASH_FROM_USD)
-// Some combinations of demos and debug messages may overflow the
-// Seeeduino / Arduino flash. The symptom will be a programming error
-// from AVRdude.
-//
-#define BMP_DEMO             (1)  //Images must already be programmed into
-                                  //flash by using PROGRAM_FLASH_FROM_USD
-#define   BMP_SCROLL         (1)  //1=scrolling background (cloud.a8z)
-                                  //0=static image (splash.a8z)
-#define SOUND_DEMO           (0)  //Uses uSD
-#define   SOUND_VOICE        (1)  //1=VOI_8K.RAW, 0=MUS_8K.RAW
-#define   SOUND_PLAY_TIMES   (1)
-#define LOGO_DEMO            (1)  //Rotating logo (the PNG or ARGB image
-                                  //data is stored in the Seeeduino's flash)
-#define LOGO_PNG_0_ARGB2_1   (1)  //Compressed ARGB is 5408 bytes smaller
-#define BOUNCE_DEMO          (1)  //Ball-and-rubber-band demo.
-#define MARBLE_DEMO          (1)  //Marble must already be programmed into
-                                  //flash by using PROGRAM_FLASH_FROM_USD
-                                  //(bluemarb.a8z)
-#define TOUCH_DEMO           (1)
-#define VIDEO_DEMO           (0)  //Video must already be programmed into
-                                  //flash by using PROGRAM_FLASH_FROM_USD
-                                  //(Ice_400.avi)
-#define TEXT_DEMO             (1)
-//
-// These should have been copied from the debug console when
-// you built with PROGRAM_FLASH_FROM_USD set
-#define FLASH_SECTOR_MARBLE (1UL)
-#define FLASH_LENGTH_MARBLE (14400UL) // sectors: 3
-#define FLASH_SECTOR_SPLASH (5UL)
-#define FLASH_LENGTH_SPLASH (153600UL) // sectors: 37
-#define FLASH_SECTOR_CLOUDS (43UL)
-#define FLASH_LENGTH_CLOUDS (153600UL) // sectors: 37
-#define FLASH_SECTOR_ICE_FPV_512x300 (81UL)
-#define FLASH_LENGTH_ICE_FPV_512x300 (12882892UL) // sectors: 3145
-//Total sectors = 4096, free sectors = 869
-//Total flash = 16777216, free flash = 3559424
-//
-#else // (0 == PROGRAM_FLASH_FROM_USD)
-//Minimal demos when programming the EVE flash so the 
-//Seeeduino / Arduino flash does not overflow
-#define BMP_DEMO             (0)  //Images must already be programmed into
-                                  //flash by using PROGRAM_FLASH_FROM_USD
-#define   BMP_SCROLL         (0)  //1=scrolling background (cloud.a8z)
-                                  //0=static image (splash.a8z)
-#define SOUND_DEMO           (0)  //Uses uSD
-#define   SOUND_VOICE        (1)  //1=VOI_8K.RAW, 0=MUS_8K.RAW
-#define   SOUND_PLAY_TIMES   (1)
-#define LOGO_DEMO            (1)  //Rotating logo (the PNG or ARGB image
-                                  //data is stored in the Seeeduino's flash)
-#define LOGO_PNG_0_ARGB2_1   (0)  //Compressed ARGB is 5408 bytes smaller
-#define BOUNCE_DEMO          (1)  //Ball-and-rubber-band demo.
-#define MARBLE_DEMO          (0)  //Marble must already be programmed into
-                                  //flash by using PROGRAM_FLASH_FROM_USD
-                                  //(bluemarb.a8z)
-#define TOUCH_DEMO           (0)
-#define VIDEO_DEMO           (0)  //Video must already be programmed into
-                                  //flash by using PROGRAM_FLASH_FROM_USD
-                                  //(Ice_400.avi)
-#endif // (0 == PROGRAM_FLASH_FROM_USD)
+
 //============================================================================
 //
 // You can set DEBUG_LEVEL to:
@@ -131,14 +13,7 @@
 //   DEBUG_GEEK   (6.4K ~ 7K flash)
 // to send messages to the console (Ctrl+Shift+M) in the arduino IDE.
 #define DEBUG_LEVEL (DEBUG_GEEK)
-//============================================================================
-// Turn on uSD code if one of the demos above uses it, or we are programming
-// the flash from the uSD.
-#if ((0 != SOUND_DEMO) || (0 != BMP_DEMO) || (0 != MARBLE_DEMO) || (0 != PROGRAM_FLASH_FROM_USD))
-  #define BUILD_SD           (1)
-#else
-  #define BUILD_SD           (0)
-#endif
+
 //============================================================================
 // Wiring for Seeeduino v4.2 (3.3v) connected to CFA10098 breakout for testing.
 //   ARD      | Port | 10098/EVE           | Color
@@ -153,32 +28,24 @@
 // #13/D13    |  PB5 | SCK  (hardware SPI) | orange
 
 //Arduino style pin defines
-// Interrupt from EVE to Arduino - input, not used in this example.
-#define EVE_INT     (7)
-// PD_N from Arduino to EVE - effectively EVE reset
-#define EVE_PD_NOT  (8)
-// SPI chip select - defined separately since it's manipulated with GPIO calls
-#define EVE_CS_NOT  (9)
-// Reserved for use with the SD card library
-#define SD_CS       (10)
-// Debug LED, or used for scope trigger or precise timing
-#define DEBUG_LED   (3)
+#define EVE_INT    (14)
+#define EVE_PD_NOT (9)
+#define EVE_CS_NOT (10)
+#define DEBUG_LED  (3)
 
 //Faster direct port access (specific to AVR)
-#define CLR_EVE_PD_NOT        (PORTB &= ~(0x01))
-#define SET_EVE_PD_NOT        (PORTB |=  (0x01))
-#define CLR_EVE_CS_NOT        (PORTB &= ~(0x02))
-#define SET_EVE_CS_NOT        (PORTB |=  (0x02))
-#define CLR_SD_CS_NOT         (PORTB &= ~(0x04))
-#define SET_SD_CS_NOT         (PORTB |=  (0x04))
-#define CLR_MOSI              (PORTB &= ~(0x08))
-#define SET_MOSI              (PORTB |=  (0x08))
-#define CLR_MISO              (PORTB &= ~(0x10))
-#define SET_MISO              (PORTB |=  (0x10))
-#define CLR_SCK               (PORTB &= ~(0x20))
-#define SET_SCK               (PORTB |=  (0x20))
-#define CLR_DEBUG_LED         (PORTD &= ~(0x08))
-#define SET_DEBUG_LED         (PORTD |=  (0x08))
+#define CLR_EVE_PD_NOT        (digitalWrite(EVE_PD_NOT, LOW))
+#define SET_EVE_PD_NOT        (digitalWrite(EVE_PD_NOT, HIGH))
+#define CLR_EVE_CS_NOT        (digitalWrite(EVE_CS_NOT, LOW))
+#define SET_EVE_CS_NOT        (digitalWrite(EVE_CS_NOT, HIGH))
+#define CLR_MOSI              (digitalWrite(MOSI, LOW))
+#define SET_MOSI              (digitalWrite(MOSI, HIGH))
+#define CLR_MISO              (digitalWrite(MISO, LOW))
+#define SET_MISO              (digitalWrite(MISO, HIGH))
+#define CLR_SCK               (digitalWrite(SCK, LOW))
+#define SET_SCK               (digitalWrite(SCK, HIGH))
+#define CLR_DEBUG_LED         (digitalWrite(DEBUG_LED, LOW))
+#define SET_DEBUG_LED         (digitalWrite(DEBUG_LED, HIGH))
 //============================================================================
 // These defines describe the circuit board and EVE accelerator. Typically
 // you will want to use these directly and not mess with them.
@@ -234,10 +101,6 @@
   (EVE_PINDRIVE_SPIM_IO2_HR    | EVE_PINDRIVE_HR_5mA),\
   (EVE_PINDRIVE_SPIM_IO3_HR    | EVE_PINDRIVE_HR_5mA)\
   }
-#else  // ((EVE_DEVICE == BT815) ||(EVE_DEVICE == BT816) ||(EVE_DEVICE == BT817) || (EVE_DEVICE == BT818))
-// Older parts have less granularity.
-// LCD drive strength: 0=5mA, 1=10mA
-#define LCD_DRIVE_10MA   (0)
 #endif // ((EVE_DEVICE == BT815) ||(EVE_DEVICE == BT816) ||(EVE_DEVICE == BT817) || (EVE_DEVICE == BT818))
 
 // Spread Spectrum on RGB signals. Probably not a good idea at higher
@@ -304,13 +167,6 @@
 // Total number of lines per screen
 #define LCD_VCYCLE  (VLH+VFP+VS+VBP+VLP)
 //============================================================================
-// Throw an error if touch demo is requested for a non-touch display.
-#if (EVE_TOUCH_TYPE == EVE_TOUCH_NONE)
-#if (0 != TOUCH_DEMO)
-  #error Cannot enable touch demo for a non-touch display.
-#endif // (0 != TOUCH_DEMO)
-#endif // (EVE_TOUCH_TYPE != EVE_TOUCH_NONE)
-//============================================================================
 // Throw an error if the controller does not match the touch type.
 #if ((EVE_TOUCH_TYPE == EVE_TOUCH_RESISTIVE) && \
      ((EVE_DEVICE == FT801) || \
@@ -329,19 +185,9 @@
   #error Cannot specify EVE_TOUCH_CAPACITIVE for an EVE_DEVICE that only supports resistive touch.
 #endif
 //============================================================================
-// Manually control the backlight brightness by touching along an axis.
-#if (0 != TOUCH_DEMO)
-#define MANUAL_BACKLIGHT_DEBUG (0)
-#endif // (0 != TOUCH_DEMO)
-//============================================================================
 // Remotely control the backlight (debug only).
 #if (DEBUG_LEVEL != DEBUG_NONE)
 #define REMOTE_BACKLIGHT_DEBUG (0)
 #endif // (DEBUG_LEVEL != DEBUG_NONE)
-//============================================================================
-// Test code for Reset_EVE_Coprocessor() (debug only).
-#if ((0 != LOGO_DEMO) && (1 == LOGO_PNG_0_ARGB2_1))
-#define DEBUG_COPROCESSOR_RESET (0)
-#endif // ((0 != LOGO_DEMO) &&( 1 == LOGO_PNG_0_ARGB2_1))
 //============================================================================
 #endif // __CFA10100_DEFINES_H__
