@@ -14,22 +14,23 @@
 #include "teensy_can.h"
 #include "virtualTimer.h"
 
+
 double rgb[3] = {0, 0, 1};
 uint16_t radius = 32;
 
 void Dash::GetCAN() {
-  can_bus1.Tick();
-  can_bus2.Tick();
-  rgb[0] = float_signal;
-  rgb[2] = 1.0 - float_signal;
-  radius = 32 + uint16_t(32 * float_signal);
+  hp_can_bus.Tick();
+  lp_can_bus.Tick();
+  // rgb[0] = float_signal;
+  // rgb[2] = 1.0 - float_signal;
+  // radius = 32 + uint16_t(32 * float_signal);
 }
 
 void Dash::Initialize() {
-  can_bus1.Initialize(ICAN::BaudRate::kBaud1M);
-  can_bus2.Initialize(ICAN::BaudRate::kBaud1M);
-  can_bus1.RegisterRXMessage(rx_message1);  // Temporary workaround
-  can_bus2.RegisterRXMessage(rx_message2);
+  hp_can_bus.Initialize(ICAN::BaudRate::kBaud1M);
+  lp_can_bus.Initialize(ICAN::BaudRate::kBaud1M);
+  hp_can_bus.RegisterRXMessage(rx_ptrain);  // Temporary workaround
+  lp_can_bus.RegisterRXMessage(rx_flwheel);
 
   // Light or Dark
   mode = 0;
@@ -43,6 +44,13 @@ uint16_t Dash::UpdateBackground(uint16_t FWol, uint8_t r, uint8_t g, uint8_t b) 
 }
 
 uint16_t Dash::AddToDisplayList(uint16_t FWol) {
+  Serial.print("Motor temp: ");
+  Serial.print(motor_temp_signal);
+  Serial.print("\n");
+  Serial.print("FL wheel speed: ");
+  Serial.print(fl_wheel_speed_signal);
+  Serial.print("\n");
+
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
     uint8_t(rgb[0] * 255),
     uint8_t(rgb[1] * 255),
@@ -60,7 +68,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     FWol,
     20,
     (LCD_HEIGHT / 2) - 10,
-    uint16_t(float_signal * (LCD_WIDTH - 50)) + 30,
+    uint16_t(0 * (LCD_WIDTH - 50)) + 30,
     (LCD_HEIGHT / 2) + 10
   );
 
@@ -75,7 +83,17 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     (LCD_HEIGHT / 2) - 42,
     25,
     EVE_OPT_CENTER,
-    "Test Text Color"
+    "Motor temp signal: %f",
+    motor_temp_signal
+  );
+  FWol = EVE_PrintF(
+    FWol,
+    LCD_WIDTH / 2,
+    (LCD_HEIGHT / 2),
+    25,
+    EVE_OPT_CENTER,
+    "Wheel speed signal: %f",
+    fl_wheel_speed_signal
   );
 
   timer_group.Tick(millis());
