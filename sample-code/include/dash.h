@@ -15,8 +15,8 @@ public:
   uint16_t UpdateBackground(uint16_t FWol, uint8_t r, uint8_t g, uint8_t b);
   uint16_t AddToDisplayList(uint16_t FWol);
 private:
-  TeensyCAN<1> hp_can_bus{};
-  TeensyCAN<2> lp_can_bus{};
+  TeensyCAN<2> hp_can_bus{};
+  TeensyCAN<1> lp_can_bus{};
   VirtualTimerGroup timer_group{};
   CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40), false> motor_temp_signal;
   CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false> fl_wheel_speed_signal;

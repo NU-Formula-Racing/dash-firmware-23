@@ -44,18 +44,16 @@ uint16_t Dash::UpdateBackground(uint16_t FWol, uint8_t r, uint8_t g, uint8_t b) 
 }
 
 uint16_t Dash::AddToDisplayList(uint16_t FWol) {
-  Serial.print("Motor temp: ");
-  Serial.print(motor_temp_signal);
-  Serial.print("\n");
-  Serial.print("FL wheel speed: ");
-  Serial.print(fl_wheel_speed_signal);
-  Serial.print("\n");
-
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
     uint8_t(rgb[0] * 255),
     uint8_t(rgb[1] * 255),
     uint8_t(rgb[2] * 255)
   ));
+
+  const float kWheelSpeed = 80.0;
+  const float kMotorTemp = 10.0;
+  float fl_wheel_speed = static_cast<float>(fl_wheel_speed_signal);
+  float motor_temp = static_cast<float>(motor_temp_signal);
 
   // Draw a circle in the center of the screen 800 x 480
   // FWol = EVE_Point(
@@ -84,7 +82,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     25,
     EVE_OPT_CENTER,
     "Motor temp signal: %f",
-    motor_temp_signal
+    motor_temp
   );
   FWol = EVE_PrintF(
     FWol,
@@ -93,8 +91,15 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     25,
     EVE_OPT_CENTER,
     "Wheel speed signal: %f",
-    fl_wheel_speed_signal
+    fl_wheel_speed
   );
+
+  Serial.print("Motor temp: ");
+  Serial.print(motor_temp_signal);
+  Serial.print("\n");
+  Serial.print("FL wheel speed: ");
+  Serial.print(fl_wheel_speed_signal);
+  Serial.print("\n");
 
   timer_group.Tick(millis());
 
