@@ -30,7 +30,13 @@ void Dash::Initialize() {
   hp_can_bus.Initialize(ICAN::BaudRate::kBaud1M);
   lp_can_bus.Initialize(ICAN::BaudRate::kBaud1M);
   hp_can_bus.RegisterRXMessage(rx_ptrain);  // Temporary workaround
+  lp_can_bus.RegisterRXMessage(rx_bmssoe);
+  lp_can_bus.RegisterRXMessage(rx_bmsstat);
+  lp_can_bus.RegisterRXMessage(rx_bmsstat);
   lp_can_bus.RegisterRXMessage(rx_flwheel);
+  lp_can_bus.RegisterRXMessage(rx_frwheel);
+  lp_can_bus.RegisterRXMessage(rx_blwheel);
+  lp_can_bus.RegisterRXMessage(rx_brwheel);  
 
   // Light or Dark
   mode = 0;
