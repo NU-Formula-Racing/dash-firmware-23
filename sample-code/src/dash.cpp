@@ -40,9 +40,14 @@ void Dash::Initialize() {
 
   // Light or Dark
   mode = 0;
+  index = 0;
+
+  error_count = 2;
 
   timer_group.AddTimer(1, [this]() { this->GetCAN(); });
   timer_group.AddTimer(3000, [this]() { mode = 1 - mode; });
+  timer_group.AddTimer(1000, [this]() { if(index >= error_count-1) {index = 0;}
+  else{index = index + 1; }});
 }
 
 uint16_t Dash::UpdateBackground(uint16_t FWol, uint8_t r, uint8_t g, uint8_t b) {
@@ -68,6 +73,12 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   //   LCD_HEIGHT * 8,
   //   radius * 8
   // );
+
+  msg[0] = "Error1";
+  msg[1] = "Error2";
+
+  error_count = 2;
+
   FWol = EVE_Filled_Rectangle(
     FWol,
     20,
@@ -81,6 +92,17 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     uint8_t(mode * 255),
     uint8_t(mode * 255)
   ));
+
+  FWol = EVE_PrintF(
+    FWol,
+    LCD_WIDTH / 2,
+    (LCD_HEIGHT / 2) - 84,
+    25,
+    EVE_OPT_CENTER,
+    "Errors: %s",
+    msg[index]
+  );
+
   FWol = EVE_PrintF(
     FWol,
     LCD_WIDTH / 2,

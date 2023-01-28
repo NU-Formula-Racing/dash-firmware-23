@@ -10,6 +10,10 @@
 class Dash {
 public:
   char mode;
+  int index;
+  char* msg[5];
+
+  int error_count;
 
   void Initialize();
   uint16_t UpdateBackground(uint16_t FWol, uint8_t r, uint8_t g, uint8_t b);
