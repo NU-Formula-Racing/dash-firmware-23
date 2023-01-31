@@ -14,9 +14,12 @@
 #include "teensy_can.h"
 #include "virtualTimer.h"
 
+#include "mutable_array.h"
 
 double rgb[3] = {0, 0, 1};
 uint16_t radius = 32;
+
+
 
 void Dash::GetCAN() {
   hp_can_bus.Tick();
@@ -41,13 +44,16 @@ void Dash::Initialize() {
   // Light or Dark
   mode = 0;
   index = 0;
+  arr.AddString("Error 1");
+  arr.AddString("Error 2");
+  arr.AddString("Error 3");
 
-  error_count = 2;
 
   timer_group.AddTimer(1, [this]() { this->GetCAN(); });
   timer_group.AddTimer(3000, [this]() { mode = 1 - mode; });
-  timer_group.AddTimer(1000, [this]() { if(index >= error_count-1) {index = 0;}
-  else{index = index + 1; }});
+  timer_group.AddTimer(1000, [this]() { if(index >= arr.Length()-1) {index = 0;}
+  else{index = index + 1;}});
+  timer_group.AddTimer(6000, [this]() {arr.Remove(2);});
 }
 
 uint16_t Dash::UpdateBackground(uint16_t FWol, uint8_t r, uint8_t g, uint8_t b) {
@@ -66,6 +72,9 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   float fl_wheel_speed = static_cast<float>(fl_wheel_speed_signal);
   float motor_temp = static_cast<float>(motor_temp_signal);
 
+ 
+
+
   // Draw a circle in the center of the screen 800 x 480
   // FWol = EVE_Point(
   //   FWol,
@@ -74,8 +83,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   //   radius * 8
   // );
 
-  msg[0] = "Error1";
-  msg[1] = "Error2";
+  
 
   error_count = 2;
 
@@ -100,7 +108,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     25,
     EVE_OPT_CENTER,
     "Errors: %s",
-    msg[index]
+    arr[index]
   );
 
   FWol = EVE_PrintF(
@@ -122,11 +130,12 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     fl_wheel_speed
   );
 
-  Serial.print("Motor temp: ");
-  Serial.print(motor_temp_signal);
-  Serial.print("\n");
-  Serial.print("FL wheel speed: ");
-  Serial.print(fl_wheel_speed_signal);
+  // Serial.print("Motor temp: ");
+  // Serial.print(motor_temp_signal);
+  // Serial.print("\n");
+  // Serial.print("FL wheel speed: ");
+  // Serial.print(fl_wheel_speed_signal);
+
   Serial.print("\n");
 
   timer_group.Tick(millis());

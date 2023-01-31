@@ -2,18 +2,23 @@
 #include <stdint.h>
 #include "teensy_can.h"
 #include "virtualTimer.h"
+#include "mutable_array.h"
 
 #ifndef __DASH_H__
 #define __DASH_H__
+
 
 // Will Refactor later
 class Dash {
 public:
   char mode;
-  int index;
-  char* msg[5];
+  uint16_t index;
+  uint16_t error_count;
 
-  int error_count;
+  
+  MutableStringArray arr;
+
+  MutableStringArray* arr_ref = &arr;
 
   void Initialize();
   uint16_t UpdateBackground(uint16_t FWol, uint8_t r, uint8_t g, uint8_t b);
@@ -40,5 +45,6 @@ private:
  
   void GetCAN();
 };
+
 
 #endif
