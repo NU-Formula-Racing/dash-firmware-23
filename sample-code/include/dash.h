@@ -13,7 +13,6 @@ class Dash {
 public:
   char mode;
   uint16_t index;
-  uint16_t error_count;
 
   
   MutableStringArray arr;

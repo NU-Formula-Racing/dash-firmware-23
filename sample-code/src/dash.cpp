@@ -67,13 +67,21 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     uint8_t(rgb[2] * 255)
   ));
 
-  const float kWheelSpeed = 80.0;
-  const float kMotorTemp = 10.0;
+  // const float kWheelSpeed = 80.0;
+  // const float kMotorTemp = 10.0;
   float fl_wheel_speed = static_cast<float>(fl_wheel_speed_signal);
+  float fr_wheel_speed = static_cast<float>(fr_wheel_speed_signal);
+  float bl_wheel_speed = static_cast<float>(bl_wheel_speed_signal);
+  float br_wheel_speed = static_cast<float>(br_wheel_speed_signal);
+  float wheel_speed_avg = static_cast<float>((fl_wheel_speed + fr_wheel_speed + bl_wheel_speed + br_wheel_speed) / 4.0);
+  
   float motor_temp = static_cast<float>(motor_temp_signal);
 
- 
+  float batt_voltage = static_cast<float>(batt_voltage_signal);
 
+  float batt_current = static_cast<float>(batt_current_signal);
+
+  float batt_charge = static_cast<float>(bms_soc_signal);
 
   // Draw a circle in the center of the screen 800 x 480
   // FWol = EVE_Point(
@@ -83,17 +91,13 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   //   radius * 8
   // );
 
-  
-
-  error_count = 2;
-
-  FWol = EVE_Filled_Rectangle(
-    FWol,
-    20,
-    (LCD_HEIGHT / 2) - 10,
-    uint16_t(0 * (LCD_WIDTH - 50)) + 30,
-    (LCD_HEIGHT / 2) + 10
-  );
+  // FWol = EVE_Filled_Rectangle(
+  //   FWol,
+  //   20,
+  //   (LCD_HEIGHT / 2) - 10,
+  //   uint16_t(0 * (LCD_WIDTH - 50)) + 30,
+  //   (LCD_HEIGHT / 2) + 10
+  // );
 
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
     uint8_t(mode * 255),
@@ -105,7 +109,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     FWol,
     LCD_WIDTH / 2,
     (LCD_HEIGHT / 2) - 84,
-    25,
+    24.3,
     EVE_OPT_CENTER,
     "Errors: %s",
     arr[index]
@@ -115,7 +119,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     FWol,
     LCD_WIDTH / 2,
     (LCD_HEIGHT / 2) - 42,
-    25,
+    24.3,
     EVE_OPT_CENTER,
     "Motor temp signal: %f",
     motor_temp
@@ -124,10 +128,37 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     FWol,
     LCD_WIDTH / 2,
     (LCD_HEIGHT / 2),
-    25,
+    24.3,
     EVE_OPT_CENTER,
     "Wheel speed signal: %f",
-    fl_wheel_speed
+    wheel_speed_avg
+  );
+  FWol = EVE_PrintF(
+    FWol,
+    LCD_WIDTH / 2,
+    (LCD_HEIGHT / 2) + 42,
+    24.3,
+    EVE_OPT_CENTER,
+    "Battery voltage signal: %f",
+    batt_voltage
+  );
+  FWol = EVE_PrintF(
+    FWol,
+    LCD_WIDTH / 2,
+    (LCD_HEIGHT / 2) + 84,
+    24.3,
+    EVE_OPT_CENTER,
+    "Battery current signal: %f",
+    batt_current
+  );
+  FWol = EVE_PrintF(
+    FWol,
+    LCD_WIDTH / 2,
+    (LCD_HEIGHT / 2) + 126,
+    24.3,
+    EVE_OPT_CENTER,
+    "Battery charge: %f",
+    batt_charge
   );
 
   // Serial.print("Motor temp: ");
