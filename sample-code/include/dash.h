@@ -35,8 +35,8 @@ private:
   CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false> bl_wheel_speed_signal;
   CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false> br_wheel_speed_signal;
   CANRXMessage<1> rx_ptrain{hp_can_bus, 0x420, motor_temp_signal};
-  CANRXMessage<2> rx_bmssoe{lp_can_bus, 0x576, batt_voltage_signal, batt_current_signal};
-  CANRXMessage<1> rx_bmsstat{lp_can_bus, 0x241, bms_soc_signal};
+  CANRXMessage<2> rx_bmssoe{hp_can_bus, 0x240, batt_voltage_signal, batt_current_signal};
+  CANRXMessage<1> rx_bmsstat{hp_can_bus, 0x241, bms_soc_signal};
   CANRXMessage<1> rx_flwheel{lp_can_bus, 0x400, fl_wheel_speed_signal};
   CANRXMessage<1> rx_frwheel{lp_can_bus, 0x401, fr_wheel_speed_signal};
   CANRXMessage<1> rx_blwheel{lp_can_bus, 0x402, bl_wheel_speed_signal};

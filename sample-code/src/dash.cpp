@@ -16,6 +16,8 @@
 
 #include "mutable_array.h"
 
+//#define DEBUG_MODE
+
 double rgb[3] = {0, 0, 1};
 uint16_t radius = 32;
 
@@ -33,9 +35,9 @@ void Dash::Initialize() {
   hp_can_bus.Initialize(ICAN::BaudRate::kBaud1M);
   lp_can_bus.Initialize(ICAN::BaudRate::kBaud1M);
   hp_can_bus.RegisterRXMessage(rx_ptrain);  // Temporary workaround
-  lp_can_bus.RegisterRXMessage(rx_bmssoe);
-  lp_can_bus.RegisterRXMessage(rx_bmsstat);
-  lp_can_bus.RegisterRXMessage(rx_bmsstat);
+  hp_can_bus.RegisterRXMessage(rx_bmssoe);
+  //hp_can_bus.RegisterRXMessage(rx_bmssoe);
+  hp_can_bus.RegisterRXMessage(rx_bmsstat);
   lp_can_bus.RegisterRXMessage(rx_flwheel);
   lp_can_bus.RegisterRXMessage(rx_frwheel);
   lp_can_bus.RegisterRXMessage(rx_blwheel);
@@ -49,7 +51,7 @@ void Dash::Initialize() {
   arr.AddString("Error 3");
 
 
-  timer_group.AddTimer(1, [this]() { this->GetCAN(); });
+  timer_group.AddTimer(10, [this]() { this->GetCAN(); });
   timer_group.AddTimer(3000, [this]() { mode = 1 - mode; });
   timer_group.AddTimer(1000, [this]() { if(index >= arr.Length()-1) {index = 0;}
   else{index = index + 1;}});
@@ -66,6 +68,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     uint8_t(rgb[1] * 255),
     uint8_t(rgb[2] * 255)
   ));
+
 
   // const float kWheelSpeed = 80.0;
   // const float kMotorTemp = 10.0;
@@ -98,68 +101,153 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   //   uint16_t(0 * (LCD_WIDTH - 50)) + 30,
   //   (LCD_HEIGHT / 2) + 10
   // );
+  #ifdef DEBUG_MODE
+    FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+      uint8_t(mode * 255),
+      uint8_t(mode * 255),
+      uint8_t(mode * 255)
+    ));
 
-  FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
-    uint8_t(mode * 255),
-    uint8_t(mode * 255),
-    uint8_t(mode * 255)
-  ));
+    FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2,
+      (LCD_HEIGHT / 2) - 126,
+      30,
+      EVE_OPT_CENTER,
+      "Display Mode: Debug"
+    );
 
-  FWol = EVE_PrintF(
-    FWol,
-    LCD_WIDTH / 2,
-    (LCD_HEIGHT / 2) - 84,
-    24.3,
-    EVE_OPT_CENTER,
-    "Errors: %s",
-    arr[index]
-  );
+    FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2,
+      (LCD_HEIGHT / 2) - 84,
+      24.3,
+      EVE_OPT_CENTER,
+      "Errors: %s",
+      arr[index]
+    );
 
-  FWol = EVE_PrintF(
-    FWol,
-    LCD_WIDTH / 2,
-    (LCD_HEIGHT / 2) - 42,
-    24.3,
-    EVE_OPT_CENTER,
-    "Motor temp signal: %f",
-    motor_temp
-  );
-  FWol = EVE_PrintF(
-    FWol,
-    LCD_WIDTH / 2,
-    (LCD_HEIGHT / 2),
-    24.3,
-    EVE_OPT_CENTER,
-    "Wheel speed signal: %f",
-    wheel_speed_avg
-  );
-  FWol = EVE_PrintF(
-    FWol,
-    LCD_WIDTH / 2,
-    (LCD_HEIGHT / 2) + 42,
-    24.3,
-    EVE_OPT_CENTER,
-    "Battery voltage signal: %f",
-    batt_voltage
-  );
-  FWol = EVE_PrintF(
-    FWol,
-    LCD_WIDTH / 2,
-    (LCD_HEIGHT / 2) + 84,
-    24.3,
-    EVE_OPT_CENTER,
-    "Battery current signal: %f",
-    batt_current
-  );
-  FWol = EVE_PrintF(
-    FWol,
-    LCD_WIDTH / 2,
-    (LCD_HEIGHT / 2) + 126,
-    24.3,
-    EVE_OPT_CENTER,
-    "Battery charge: %f",
-    batt_charge
-  );
+    FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2,
+      (LCD_HEIGHT / 2) - 42,
+      24.3,
+      EVE_OPT_CENTER,
+      "Motor temp signal: %f",
+      motor_temp
+    );
+    FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2,
+      (LCD_HEIGHT / 2),
+      24.3,
+      EVE_OPT_CENTER,
+      "Wheel speed signal: %f",
+      wheel_speed_avg
+    );
+    FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2,
+      (LCD_HEIGHT / 2) + 42,
+      24.3,
+      EVE_OPT_CENTER,
+      "Battery voltage signal: %f",
+      batt_voltage
+    );
+    FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2,
+      (LCD_HEIGHT / 2) + 84,
+      24.3,
+      EVE_OPT_CENTER,
+      "Battery current signal: %f",
+      batt_current
+    );
+    FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2,
+      (LCD_HEIGHT / 2) + 126,
+      24.3,
+      EVE_OPT_CENTER,
+      "Battery charge: %f",
+      batt_charge
+    );
+  #endif
+
+  #ifndef DEBUG_MODE
+    FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+      uint8_t(mode * 255),
+      uint8_t(mode * 255),
+      uint8_t(mode * 255)
+    ));
+
+    FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2,
+      (LCD_HEIGHT / 2) - 126,
+      30,
+      EVE_OPT_CENTER,
+      "Display Mode: Non-Debug"
+    );
+
+    FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2,
+      (LCD_HEIGHT / 2) - 84,
+      24.3,
+      EVE_OPT_CENTER,
+      "Errors: %s",
+      arr[index]
+    );
+
+    FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2,
+      (LCD_HEIGHT / 2) - 42,
+      24.3,
+      EVE_OPT_CENTER,
+      "Motor temp signal: %f",
+      motor_temp
+    );
+    FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2,
+      (LCD_HEIGHT / 2),
+      24.3,
+      EVE_OPT_CENTER,
+      "Wheel speed signal: %f",
+      wheel_speed_avg
+    );
+    FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2,
+      (LCD_HEIGHT / 2) + 42,
+      24.3,
+      EVE_OPT_CENTER,
+      "Battery voltage signal: %f",
+      batt_voltage
+    );
+    FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2,
+      (LCD_HEIGHT / 2) + 84,
+      24.3,
+      EVE_OPT_CENTER,
+      "Battery current signal: %f",
+      batt_current
+    );
+    FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2,
+      (LCD_HEIGHT / 2) + 126,
+      24.3,
+      EVE_OPT_CENTER,
+      "Battery charge: %f",
+      batt_charge
+    );
+
+  #endif
+
 
   // Serial.print("Motor temp: ");
   // Serial.print(motor_temp_signal);
