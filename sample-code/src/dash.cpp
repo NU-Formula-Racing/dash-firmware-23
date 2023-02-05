@@ -16,7 +16,7 @@
 
 #include "mutable_array.h"
 
-//#define DEBUG_MODE
+// #define DEBUG_MODE
 
 double rgb[3] = {0, 0, 1};
 uint16_t radius = 32;
@@ -86,6 +86,8 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
 
   float batt_charge = static_cast<float>(bms_soc_signal);
 
+  int batt_height = (int) wheel_speed_avg;
+
   // Draw a circle in the center of the screen 800 x 480
   // FWol = EVE_Point(
   //   FWol,
@@ -94,13 +96,6 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   //   radius * 8
   // );
 
-  // FWol = EVE_Filled_Rectangle(
-  //   FWol,
-  //   20,
-  //   (LCD_HEIGHT / 2) - 10,
-  //   uint16_t(0 * (LCD_WIDTH - 50)) + 30,
-  //   (LCD_HEIGHT / 2) + 10
-  // );
   #ifdef DEBUG_MODE
     FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
       uint8_t(mode * 255),
@@ -133,7 +128,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
       (LCD_HEIGHT / 2) - 42,
       24.3,
       EVE_OPT_CENTER,
-      "Motor temp signal: %f",
+      "Motor temp signal: %.2f C",
       motor_temp
     );
     FWol = EVE_PrintF(
@@ -142,7 +137,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
       (LCD_HEIGHT / 2),
       24.3,
       EVE_OPT_CENTER,
-      "Wheel speed signal: %f",
+      "Wheel speed signal: %.2f MPH",
       wheel_speed_avg
     );
     FWol = EVE_PrintF(
@@ -151,7 +146,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
       (LCD_HEIGHT / 2) + 42,
       24.3,
       EVE_OPT_CENTER,
-      "Battery voltage signal: %f",
+      "Battery voltage signal: %.2f V",
       batt_voltage
     );
     FWol = EVE_PrintF(
@@ -160,7 +155,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
       (LCD_HEIGHT / 2) + 84,
       24.3,
       EVE_OPT_CENTER,
-      "Battery current signal: %f",
+      "Battery current signal: %.2f A",
       batt_current
     );
     FWol = EVE_PrintF(
@@ -169,12 +164,19 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
       (LCD_HEIGHT / 2) + 126,
       24.3,
       EVE_OPT_CENTER,
-      "Battery charge: %f",
+      "Battery charge: %.2f%%",
       batt_charge
     );
   #endif
 
   #ifndef DEBUG_MODE
+    FWol = EVE_Filled_Rectangle(
+    FWol,
+    70,
+    LCD_HEIGHT - 50,
+    uint16_t(0 * (LCD_WIDTH - 50)) + 100,
+    LCD_HEIGHT-50-(70-batt_height)*20);
+
     FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
       uint8_t(mode * 255),
       uint8_t(mode * 255),
@@ -203,48 +205,23 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     FWol = EVE_PrintF(
       FWol,
       LCD_WIDTH / 2,
-      (LCD_HEIGHT / 2) - 42,
-      24.3,
-      EVE_OPT_CENTER,
-      "Motor temp signal: %f",
-      motor_temp
-    );
-    FWol = EVE_PrintF(
-      FWol,
-      LCD_WIDTH / 2,
       (LCD_HEIGHT / 2),
-      24.3,
+      31.5,
       EVE_OPT_CENTER,
-      "Wheel speed signal: %f",
+      "%.2f MPH",
       wheel_speed_avg
     );
+
     FWol = EVE_PrintF(
       FWol,
-      LCD_WIDTH / 2,
-      (LCD_HEIGHT / 2) + 42,
-      24.3,
+      85,
+      (LCD_HEIGHT - 38),
+      23,
       EVE_OPT_CENTER,
-      "Battery voltage signal: %f",
-      batt_voltage
+      "Batt %%"
     );
-    FWol = EVE_PrintF(
-      FWol,
-      LCD_WIDTH / 2,
-      (LCD_HEIGHT / 2) + 84,
-      24.3,
-      EVE_OPT_CENTER,
-      "Battery current signal: %f",
-      batt_current
-    );
-    FWol = EVE_PrintF(
-      FWol,
-      LCD_WIDTH / 2,
-      (LCD_HEIGHT / 2) + 126,
-      24.3,
-      EVE_OPT_CENTER,
-      "Battery charge: %f",
-      batt_charge
-    );
+
+
 
   #endif
 
