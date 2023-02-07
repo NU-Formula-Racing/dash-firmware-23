@@ -80,6 +80,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   
   float motor_temp = static_cast<float>(motor_temp_signal);
 
+  // max is 600
   float batt_voltage = static_cast<float>(batt_voltage_signal);
 
   float batt_current = static_cast<float>(batt_current_signal);
@@ -175,7 +176,14 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     70,
     LCD_HEIGHT - 50,
     uint16_t(0 * (LCD_WIDTH - 50)) + 100,
-    LCD_HEIGHT-50-(70-batt_height)*20);
+    LCD_HEIGHT-50-(70+batt_height)*2);
+
+    FWol = EVE_Filled_Rectangle(
+    FWol,
+    155,
+    LCD_HEIGHT - 50,
+    uint16_t(0 * (LCD_WIDTH - 50)) + 185,
+    LCD_HEIGHT-50-(70+batt_height)*2);
 
     FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
       uint8_t(mode * 255),
@@ -219,6 +227,15 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
       23,
       EVE_OPT_CENTER,
       "Batt %%"
+    );
+
+    FWol = EVE_PrintF(
+      FWol,
+      170,
+      (LCD_HEIGHT - 38),
+      23,
+      EVE_OPT_CENTER,
+      "Batt Volt"
     );
 
 
