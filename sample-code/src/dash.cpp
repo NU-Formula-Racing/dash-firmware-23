@@ -52,7 +52,7 @@ void Dash::Initialize() {
 
 
   timer_group.AddTimer(10, [this]() { this->GetCAN(); });
-  timer_group.AddTimer(3000, [this]() { mode = 1 - mode; });
+  // timer_group.AddTimer(3000, [this]() { mode = 1 - mode; });
   timer_group.AddTimer(1000, [this]() { if(index >= arr.Length()-1) {index = 0;}
   else{index = index + 1;}});
   timer_group.AddTimer(6000, [this]() {arr.Remove(2);});
@@ -177,13 +177,20 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     LCD_HEIGHT - 50,
     uint16_t(0 * (LCD_WIDTH - 50)) + 100,
     LCD_HEIGHT-50-(70+batt_height)*2);
+    
+    FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+    uint8_t(0),
+    uint8_t(0),
+    uint8_t(0)
+  ));
 
     FWol = EVE_Filled_Rectangle(
     FWol,
-    155,
+    725,
     LCD_HEIGHT - 50,
-    uint16_t(0 * (LCD_WIDTH - 50)) + 185,
+    uint16_t(0 * (LCD_WIDTH - 50)) + 755,
     LCD_HEIGHT-50-(70+batt_height)*2);
+
 
     FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
       uint8_t(mode * 255),
@@ -214,7 +221,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
       FWol,
       LCD_WIDTH / 2,
       (LCD_HEIGHT / 2),
-      31.5,
+      31,
       EVE_OPT_CENTER,
       "%.2f MPH",
       wheel_speed_avg
@@ -229,9 +236,10 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
       "Batt %%"
     );
 
+
     FWol = EVE_PrintF(
       FWol,
-      170,
+      740,
       (LCD_HEIGHT - 38),
       23,
       EVE_OPT_CENTER,
