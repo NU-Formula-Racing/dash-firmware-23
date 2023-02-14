@@ -204,6 +204,54 @@ uint16_t EVE_Text(uint16_t FWol,
   //Give the updated write pointer back to the caller
   return(FWol);
   }
+
+  // Print text from a RAM string.
+uint16_t EVE_RomFont(uint32_t FWol,
+                  uint32_t font,
+                  uint32_t romslot)
+  {
+    
+  //Combine Address_offset into then select the EVE
+  //and send the 24-bit address and operation flag.
+  _EVE_Select_and_Address(EVE_RAM_CMD|FWol,EVE_MEM_WRITE);
+
+//  _EVE_send_32(EVE_ENC_SAVE_CONTEXT);
+//  FWol=(FWol+4)&0xFFF;
+  
+  
+  //Send the EVE_ENC_CMD_TEXT command
+  _EVE_send_32(EVE_ENC_CMD_ROMFONT);
+  //Send the parameters of the EVE_ENC_CMD_TEXT command
+  //First is 32-bit combination of Y & X
+  _EVE_send_32(font);
+  //Second is a combinations of options and the font=32
+  _EVE_send_32(romslot);
+  //Keep track that we have written 12 bytes
+  FWol=(FWol+12)&0xFFF;
+
+  //Send the mandatory null terminator
+  SPI.transfer(0);
+  //Keep track that we have written a byte
+  // FWol=(FWol+1)&0xFFF;
+ 
+  //We need to ensure 4-byte alignment. Add nulls as necessary.
+  while(0 != (FWol&0x03))
+    {
+    SPI.transfer(0);
+    //Keep track that we have written a byte
+    FWol=(FWol+1)&0xFFF;
+    }
+
+//  _EVE_send_32(EVE_ENC_RESTORE_CONTEXT);
+//  FWol=(FWol+4)&0xFFF;
+  
+  
+  //De-select the EVE
+  SET_EVE_CS_NOT;
+  
+  //Give the updated write pointer back to the caller
+  return(FWol);
+  }
 //===========================================================================
 // The Arduino handles flash strings way differently than RAM, so we
 // need a special "F" function to handle flash strings.

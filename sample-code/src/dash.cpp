@@ -191,12 +191,11 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     uint16_t(0 * (LCD_WIDTH - 50)) + 755,
     LCD_HEIGHT-50-(70+batt_height)*2);
 
-
-    FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
-      uint8_t(mode * 255),
-      uint8_t(mode * 255),
-      uint8_t(mode * 255)
-    ));
+    // FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+    //   uint8_t(mode * 255),
+    //   uint8_t(mode * 255),
+    //   uint8_t(mode * 255)
+    // ));
 
     FWol = EVE_PrintF(
       FWol,
@@ -217,11 +216,18 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
       arr[index]
     );
 
+    FWol = EVE_RomFont(
+      FWol,
+      1,
+      34
+    );
+
+
     FWol = EVE_PrintF(
       FWol,
       LCD_WIDTH / 2,
       (LCD_HEIGHT / 2),
-      31,
+      1,
       EVE_OPT_CENTER,
       "%.2f MPH",
       wheel_speed_avg
