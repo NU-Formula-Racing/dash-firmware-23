@@ -22,6 +22,8 @@ public:
   void Initialize();
   uint16_t UpdateBackground(uint16_t FWol, uint8_t r, uint8_t g, uint8_t b);
   uint16_t AddToDisplayList(uint16_t FWol);
+  float WheelSpeedAvg();
+  float wheel_speed_avg;
 private:
   TeensyCAN<2> hp_can_bus{};
   TeensyCAN<1> lp_can_bus{};
@@ -40,7 +42,7 @@ private:
   CANRXMessage<1> rx_flwheel{lp_can_bus, 0x400, fl_wheel_speed_signal};
   CANRXMessage<1> rx_frwheel{lp_can_bus, 0x401, fr_wheel_speed_signal};
   CANRXMessage<1> rx_blwheel{lp_can_bus, 0x402, bl_wheel_speed_signal};
-  CANRXMessage<1> rx_brwheel{lp_can_bus, 0x403, br_wheel_speed_signal};
+  CANRXMessage<1> rx_brwheel{lp_can_bus, 0x403, [this](){ WheelSpeedAvg(); }, br_wheel_speed_signal};
  
   void GetCAN();
 };

@@ -31,6 +31,9 @@ void Dash::GetCAN() {
   // radius = 32 + uint16_t(32 * float_signal);
 }
 
+float Dash::WheelSpeedAvg(){
+  wheel_speed_avg = float((fl_wheel_speed_signal + fr_wheel_speed_signal + bl_wheel_speed_signal + br_wheel_speed_signal))/4.0;
+}
 void Dash::Initialize() {
   hp_can_bus.Initialize(ICAN::BaudRate::kBaud1M);
   lp_can_bus.Initialize(ICAN::BaudRate::kBaud1M);
@@ -76,7 +79,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   float fr_wheel_speed = static_cast<float>(fr_wheel_speed_signal);
   float bl_wheel_speed = static_cast<float>(bl_wheel_speed_signal);
   float br_wheel_speed = static_cast<float>(br_wheel_speed_signal);
-  float wheel_speed_avg = static_cast<float>((fl_wheel_speed + fr_wheel_speed + bl_wheel_speed + br_wheel_speed) / 4.0);
+  // float wheel_speed_avg = static_cast<float>((fl_wheel_speed + fr_wheel_speed + bl_wheel_speed + br_wheel_speed) / 4.0);
   
   float motor_temp = static_cast<float>(motor_temp_signal);
 
