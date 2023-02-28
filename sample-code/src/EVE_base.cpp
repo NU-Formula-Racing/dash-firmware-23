@@ -104,7 +104,7 @@ void SerPrintFF(const __FlashStringHelper *fmt, ... )
   va_start(args, fmt );
   vsnprintf_P(tmp, 128, (const char *)fmt, args);
   va_end (args);
-  Serial.print(tmp);
+  // Serial.print(tmp);
   }
 //============================================================================
 void DBG_GEEK_Decode_Flash_Status(uint8_t EVE_flash_status)

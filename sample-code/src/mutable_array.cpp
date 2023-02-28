@@ -26,7 +26,9 @@ void MutableStringArray::AddString(const char *str) {
   for (int i = 0; i < len + 1; i++) {
     copy[i] = str[i];
   }
-  data_[size_++] = copy;
+  data_[size_] = copy;
+  size_++;
+  // ++size_;
 }
 
 void MutableStringArray::Remove(const char* str) {

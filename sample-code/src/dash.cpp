@@ -93,51 +93,51 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   float external_kill = static_cast<float>(external_kill_fault_signal);
   
 
-  if(undervoltage_fault == 1){
+  if(undervoltage_fault == 1 && !(arr.Contains("Undervoltage Fault"))){
     arr.AddString("Undervoltage Fault");
   }
   else{
-    if(arr.Contains("Undervoltage Fault")){
+    if(undervoltage_fault == 0 && arr.Contains("Undervoltage Fault")){
       arr.Remove("Undervoltage Fault");
     }
   }
 
 
-  if(overvoltage_fault == 1){
+  if(overvoltage_fault == 1 && !(arr.Contains("Overvoltage Fault"))){
     arr.AddString("Overvoltage Fault");
   }
   else{
-    if(arr.Contains("Overvoltage Fault")){
+    if(overvoltage_fault == 0 && arr.Contains("Overvoltage Fault")){
       arr.Remove("Overvoltage Fault");
     }
   }
 
 
-  if(undertemp_fault == 1){
+  if(undertemp_fault == 1 && !(arr.Contains("Undertemp Fault"))){
     arr.AddString("Undertemp Fault");
   }
   else{
-    if(arr.Contains("Undertemp Fault")){
+    if(undertemp_fault == 0 && arr.Contains("Undertemp Fault")){
       arr.Remove("Undertemp Fault");
     }
   }
 
 
-  if(overtemp_fault == 1){
+  if(overtemp_fault == 1 && !(arr.Contains("Overtemp Fault"))){
     arr.AddString("Overtemp Fault");
   }
   else{
-    if(arr.Contains("Overtemp Fault")){
+    if(overtemp_fault ==0 &&  arr.Contains("Overtemp Fault")){
       arr.Remove("Overtemp Fault");
     }
   }
 
 
-  if(overcurrent_fault == 1){
+  if(overcurrent_fault == 1 && !(arr.Contains("Overcurrent Fault"))){
     arr.AddString("Overcurrent Fault");
   }
   else{
-    if(arr.Contains("Overcurrent Fault")){
+    if(overcurrent_fault==0 && arr.Contains("Overcurrent Fault")){
       arr.Remove("Overcurrent Fault");
     }
   }
@@ -152,6 +152,13 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     }
   }
 
+  if(arr.Contains("No Errors") && arr.Length() > 1){
+    arr.Remove("No Errors");
+  }
+  else if(!arr.Contains("No Errors") && arr.Length() == 0){
+    arr.AddString("No Errors");
+  }
+
 
   int batt_height = (int) batt_charge;
   float motor_temp = static_cast<float>(motor_temp_signal);
@@ -159,10 +166,6 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   // Serial.print(batt_height);
   // Serial.print("\n");
   // Serial.print(motor_temp);
-  Serial.print("\n");
-
-  Serial.print(!(arr.Contains("Hi")));
-  Serial.print("\n");
   // Draw a circle in the center of the screen 800 x 480
   // FWol = EVE_Point(
   //   FWol,
@@ -333,11 +336,9 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
 
   // Serial.print("Motor temp: ");
   // Serial.print(motor_temp_signal);
-  // Serial.print("\n");
-  // Serial.print("FL wheel speed: ");
-  // Serial.print(fl_wheel_speed_signal);
-
-  // Serial.print("\n");
+  Serial.print("\n");
+  Serial.print(arr.Length());
+  Serial.print("\n");
 
   timer_group.Tick(millis());
 
