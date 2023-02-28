@@ -7,8 +7,9 @@ class MutableStringArray {
   MutableStringArray();
   ~MutableStringArray();
   void AddString(const char *str);
-  void Remove(int index);
+  void Remove(const char* str);
   int Length() const;
+  bool Contains(const char* str) const;
   const char* operator[](int index) const;
 
  private:

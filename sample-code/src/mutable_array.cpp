@@ -29,15 +29,37 @@ void MutableStringArray::AddString(const char *str) {
   data_[size_++] = copy;
 }
 
-void MutableStringArray::Remove(int index) {
-  if (index < 0 || index >= size_) {
-    return;
+void MutableStringArray::Remove(const char* str) {
+  for (int i = 0; i < size_; i++) {
+    const char* cur_str = data_[i];
+    int j = 0;
+    while (cur_str[j] != '\0' && str[j] != '\0' && cur_str[j] == str[j]) {
+      j++;
+    }
+    if (cur_str[j] == '\0' && str[j] == '\0') {
+      delete[] data_[i];
+      for (int k = i; k < size_ - 1; k++) {
+        data_[k] = data_[k + 1];
+      }
+      --size_;
+      return;
+    }
   }
-  delete[] data_[index];
-  for (int i = index; i < size_ - 1; i++) {
-    data_[i] = data_[i + 1];
+}
+
+
+bool MutableStringArray::Contains(const char* str) const {
+  for (int i = 0; i < size_; i++) {
+    const char* s = data_[i];
+    int j = 0;
+    while (s[j] != '\0' && str[j] != '\0' && s[j] == str[j]) {
+      j++;
+    }
+    if (s[j] == '\0' && str[j] == '\0') {
+      return true;
+    }
   }
-  --size_;
+  return false;
 }
 
 int MutableStringArray::Length() const { return size_; }

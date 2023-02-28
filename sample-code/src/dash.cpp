@@ -41,6 +41,7 @@ void Dash::Initialize() {
   hp_can_bus.RegisterRXMessage(rx_bmssoe);
   //hp_can_bus.RegisterRXMessage(rx_bmssoe);
   hp_can_bus.RegisterRXMessage(rx_bmsstat);
+  hp_can_bus.RegisterRXMessage(rx_bmsfaults);
   lp_can_bus.RegisterRXMessage(rx_flwheel);
   lp_can_bus.RegisterRXMessage(rx_frwheel);
   lp_can_bus.RegisterRXMessage(rx_blwheel);
@@ -49,16 +50,11 @@ void Dash::Initialize() {
   // Light or Dark
   mode = 0;
   index = 0;
-  arr.AddString("Error 1");
-  arr.AddString("Error 2");
-  arr.AddString("Error 3");
-
-
+  arr.AddString("No Errors");
   timer_group.AddTimer(10, [this]() { this->GetCAN(); });
   // timer_group.AddTimer(3000, [this]() { mode = 1 - mode; });
   timer_group.AddTimer(1000, [this]() { if(index >= arr.Length()-1) {index = 0;}
   else{index = index + 1;}});
-  timer_group.AddTimer(6000, [this]() {arr.Remove(2);});
 }
 
 uint16_t Dash::UpdateBackground(uint16_t FWol, uint8_t r, uint8_t g, uint8_t b) {
@@ -73,25 +69,100 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   ));
 
 
-  // const float kWheelSpeed = 80.0;
-  // const float kMotorTemp = 10.0;
+  float batt_charge = static_cast<float>(bms_soc_signal); 
+
   float fl_wheel_speed = static_cast<float>(fl_wheel_speed_signal);
   float fr_wheel_speed = static_cast<float>(fr_wheel_speed_signal);
   float bl_wheel_speed = static_cast<float>(bl_wheel_speed_signal);
   float br_wheel_speed = static_cast<float>(br_wheel_speed_signal);
   // float wheel_speed_avg = static_cast<float>((fl_wheel_speed + fr_wheel_speed + bl_wheel_speed + br_wheel_speed) / 4.0);
   
-  float motor_temp = static_cast<float>(motor_temp_signal);
 
   // max is 600
   float batt_voltage = static_cast<float>(batt_voltage_signal);
 
   float batt_current = static_cast<float>(batt_current_signal);
 
-  float batt_charge = static_cast<float>(bms_soc_signal);
 
-  int batt_height = (int) wheel_speed_avg;
+  float fault_summary = static_cast<float>(fault_summary_signal);
+  float undervoltage_fault = static_cast<float>(undervoltage_fault_signal);
+  float overvoltage_fault = static_cast<float>(overvoltage_fault_signal);
+  float undertemp_fault = static_cast<float>(undertemp_fault_signal);
+  float overtemp_fault = static_cast<float>(overtemp_fault_signal);
+  float overcurrent_fault = static_cast<float>(overcurrent_fault_signal);
+  float external_kill = static_cast<float>(external_kill_fault_signal);
+  
 
+  if(undervoltage_fault == 1){
+    arr.AddString("Undervoltage Fault");
+  }
+  else{
+    if(arr.Contains("Undervoltage Fault")){
+      arr.Remove("Undervoltage Fault");
+    }
+  }
+
+
+  if(overvoltage_fault == 1){
+    arr.AddString("Overvoltage Fault");
+  }
+  else{
+    if(arr.Contains("Overvoltage Fault")){
+      arr.Remove("Overvoltage Fault");
+    }
+  }
+
+
+  if(undertemp_fault == 1){
+    arr.AddString("Undertemp Fault");
+  }
+  else{
+    if(arr.Contains("Undertemp Fault")){
+      arr.Remove("Undertemp Fault");
+    }
+  }
+
+
+  if(overtemp_fault == 1){
+    arr.AddString("Overtemp Fault");
+  }
+  else{
+    if(arr.Contains("Overtemp Fault")){
+      arr.Remove("Overtemp Fault");
+    }
+  }
+
+
+  if(overcurrent_fault == 1){
+    arr.AddString("Overcurrent Fault");
+  }
+  else{
+    if(arr.Contains("Overcurrent Fault")){
+      arr.Remove("Overcurrent Fault");
+    }
+  }
+
+
+  if(external_kill == 1 && !(arr.Contains("External Kill Fault"))){
+    arr.AddString("External Kill Fault");
+  }
+  else{
+    if(external_kill == 0 && (arr.Contains("External Kill Fault"))){
+      arr.Remove("External Kill Fault");
+    }
+  }
+
+
+  int batt_height = (int) batt_charge;
+  float motor_temp = static_cast<float>(motor_temp_signal);
+
+  // Serial.print(batt_height);
+  // Serial.print("\n");
+  // Serial.print(motor_temp);
+  Serial.print("\n");
+
+  Serial.print(!(arr.Contains("Hi")));
+  Serial.print("\n");
   // Draw a circle in the center of the screen 800 x 480
   // FWol = EVE_Point(
   //   FWol,
@@ -266,7 +337,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   // Serial.print("FL wheel speed: ");
   // Serial.print(fl_wheel_speed_signal);
 
-  Serial.print("\n");
+  // Serial.print("\n");
 
   timer_group.Tick(millis());
 
