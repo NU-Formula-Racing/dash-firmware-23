@@ -42,6 +42,7 @@ void Dash::Initialize() {
   //hp_can_bus.RegisterRXMessage(rx_bmssoe);
   hp_can_bus.RegisterRXMessage(rx_bmsstat);
   hp_can_bus.RegisterRXMessage(rx_bmsfaults);
+  hp_can_bus.RegisterRXMessage(rx_throttlestat);
   lp_can_bus.RegisterRXMessage(rx_flwheel);
   lp_can_bus.RegisterRXMessage(rx_frwheel);
   lp_can_bus.RegisterRXMessage(rx_blwheel);
@@ -91,6 +92,24 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   float overtemp_fault = static_cast<float>(overtemp_fault_signal);
   float overcurrent_fault = static_cast<float>(overcurrent_fault_signal);
   float external_kill = static_cast<float>(external_kill_fault_signal);
+
+  // int tractive_system = static_cast<float>(tractive_system_status_signal);
+
+  char tractive_system_status = 'O';
+
+  if(tractive_system_status_signal == 0){
+    tractive_system_status = 'O';
+  }
+  else if(tractive_system_status_signal == 1){
+    tractive_system_status = 'N';
+  }
+  else if(tractive_system_status_signal == 2){
+    tractive_system_status = 'D';
+  }
+  else{
+    tractive_system_status = 'F';
+  }
+
   
 
   if(undervoltage_fault == 1 && !(arr.Contains("Undervoltage Fault"))){
@@ -317,6 +336,16 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
       23,
       EVE_OPT_CENTER,
       "Batt %%"
+    );
+
+    FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2,
+      (LCD_HEIGHT - 78),
+      1,
+      EVE_OPT_CENTER,
+      "%c",
+      tractive_system_status
     );
 
 
