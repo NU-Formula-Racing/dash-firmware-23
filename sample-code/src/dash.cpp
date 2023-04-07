@@ -33,6 +33,7 @@ void Dash::GetCAN() {
 
 float Dash::WheelSpeedAvg(){
   wheel_speed_avg = float((fl_wheel_speed_signal + fr_wheel_speed_signal + bl_wheel_speed_signal + br_wheel_speed_signal))/4.0;
+  Serial.print(br_wheel_speed_signalD);
 }
 void Dash::Initialize() {
   hp_can_bus.Initialize(ICAN::BaudRate::kBaud1M);
@@ -272,7 +273,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     70,
     LCD_HEIGHT - 50,
     uint16_t(0 * (LCD_WIDTH - 50)) + 100,
-    LCD_HEIGHT-50-(70+batt_height)*2);
+    LCD_HEIGHT-50-(batt_height)*3);
     
     FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
     uint8_t(0),
@@ -285,7 +286,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     725,
     LCD_HEIGHT - 50,
     uint16_t(0 * (LCD_WIDTH - 50)) + 755,
-    LCD_HEIGHT-50-(70+batt_height)*2);
+    LCD_HEIGHT-50-(batt_voltage/6)*3);
 
     // FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
     //   uint8_t(mode * 255),
@@ -366,8 +367,8 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   // Serial.print("Motor temp: ");
   // Serial.print(motor_temp_signal);
   Serial.print("\n");
-  Serial.print(arr.Length());
-  Serial.print("\n");
+  // Serial.print(arr.Length());
+  // Serial.print("\n");
 
   timer_group.Tick(millis());
 
