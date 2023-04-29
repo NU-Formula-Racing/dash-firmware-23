@@ -30,10 +30,17 @@ void Dash::GetCAN() {
   // rgb[2] = 1.0 - float_signal;
   // radius = 32 + uint16_t(32 * float_signal);
 }
-
+float Dash::FrontBrakeTempAvg(){
+  front_brake_temp_avg = float((fl_brake_temperature + fr_brake_temperature))/2.0;
+  //Serial.print(fr_brake_temperature);
+}
+float Dash::BackBrakeTempAvg(){
+  back_brake_temp_avg = float((bl_brake_temperature + br_brake_temperature))/2.0;
+  //Serial.print(br_brake_temperature);
+}
 float Dash::WheelSpeedAvg(){
   wheel_speed_avg = float((fl_wheel_speed_signal + fr_wheel_speed_signal + bl_wheel_speed_signal + br_wheel_speed_signal))/4.0;
-  Serial.print(br_wheel_speed_signalD);
+  //Serial.print(br_wheel_speed_signal);
 }
 void Dash::Initialize() {
   hp_can_bus.Initialize(ICAN::BaudRate::kBaud1M);
@@ -73,10 +80,10 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
 
   float batt_charge = static_cast<float>(bms_soc_signal); 
 
-  float fl_wheel_speed = static_cast<float>(fl_wheel_speed_signal);
-  float fr_wheel_speed = static_cast<float>(fr_wheel_speed_signal);
-  float bl_wheel_speed = static_cast<float>(bl_wheel_speed_signal);
-  float br_wheel_speed = static_cast<float>(br_wheel_speed_signal);
+  // float fl_wheel_speed = static_cast<float>(fl_wheel_speed_signal);
+  // float fr_wheel_speed = static_cast<float>(fr_wheel_speed_signal);
+  // float bl_wheel_speed = static_cast<float>(bl_wheel_speed_signal);
+  // float br_wheel_speed = static_cast<float>(br_wheel_speed_signal);
   // float wheel_speed_avg = static_cast<float>((fl_wheel_speed + fr_wheel_speed + bl_wheel_speed + br_wheel_speed) / 4.0);
   
 
@@ -264,6 +271,24 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
       EVE_OPT_CENTER,
       "Battery charge: %.2f%%",
       batt_charge
+    );
+    FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2,
+      (LCD_HEIGHT / 2) + 126,
+      24.3,
+      EVE_OPT_CENTER,
+      "Front Brake Temp: %.2f%%",
+      front_brake_temp_avg
+    );
+    FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2,
+      (LCD_HEIGHT / 2) + 126,
+      24.3,
+      EVE_OPT_CENTER,
+      "Back Brake Temp: %.2f%%",
+      back_brake_temp_avg
     );
   #endif
 

@@ -24,6 +24,10 @@ public:
   uint16_t AddToDisplayList(uint16_t FWol);
   float WheelSpeedAvg();
   float wheel_speed_avg;
+  float FrontBrakeTempAvg();
+  float front_brake_temp_avg;
+  float BackBrakeTempAvg();
+  float back_brake_temp_avg;
 private:
   TeensyCAN<2> hp_can_bus{};
   TeensyCAN<1> lp_can_bus{};
@@ -43,17 +47,21 @@ private:
   CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false> fr_wheel_speed_signal;
   CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false> bl_wheel_speed_signal;
   CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false> br_wheel_speed_signal;
+  CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false> fl_brake_temperature;
+  CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false> fr_brake_temperature;
+  CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false> bl_brake_temperature;
+  CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false> br_brake_temperature;
   CANSignal<float, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> tractive_system_status_signal;
   CANRXMessage<1> rx_ptrain{hp_can_bus, 0x420, motor_temp_signal};
   CANRXMessage<2> rx_bmssoe{hp_can_bus, 0x240, batt_voltage_signal, batt_current_signal};
   CANRXMessage<1> rx_bmsstat{hp_can_bus, 0x241, bms_soc_signal};
   CANRXMessage<7> rx_bmsfaults{hp_can_bus, 0x250, fault_summary_signal, undervoltage_fault_signal, overvoltage_fault_signal, undertemp_fault_signal, overtemp_fault_signal, overcurrent_fault_signal, external_kill_fault_signal};
   CANRXMessage<1> rx_throttlestat{hp_can_bus, 0x301, tractive_system_status_signal};
-  CANRXMessage<1> rx_flwheel{lp_can_bus, 0x400, fl_wheel_speed_signal};
-  CANRXMessage<1> rx_frwheel{lp_can_bus, 0x401, fr_wheel_speed_signal};
-  CANRXMessage<1> rx_blwheel{lp_can_bus, 0x402, bl_wheel_speed_signal};
-  CANRXMessage<1> rx_brwheel{lp_can_bus, 0x403, [this](){ WheelSpeedAvg(); }, br_wheel_speed_signal};
- 
+  CANRXMessage<2> rx_flwheel{lp_can_bus, 0x400, fl_wheel_speed_signal, fl_brake_temperature};
+  CANRXMessage<2> rx_frwheel{lp_can_bus, 0x401, [this](){ BackBrakeTempAvg(); }, fr_wheel_speed_signal, fr_brake_temperature};
+  CANRXMessage<2> rx_blwheel{lp_can_bus, 0x402, [this](){ FrontBrakeTempAvg(); }, bl_wheel_speed_signal, bl_brake_temperature};
+  CANRXMessage<2> rx_brwheel{lp_can_bus, 0x403, [this](){ WheelSpeedAvg(); }, br_wheel_speed_signal, br_brake_temperature};
+
   void GetCAN();
 };
 
