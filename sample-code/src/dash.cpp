@@ -30,14 +30,11 @@ void Dash::GetCAN() {
   // rgb[2] = 1.0 - float_signal;
   // radius = 32 + uint16_t(32 * float_signal);
 }
-float Dash::FrontBrakeTempAvg(){
-  front_brake_temp_avg = float((fl_brake_temperature + fr_brake_temperature))/2.0;
+float Dash::BrakeTempAvg(){
+  brake_temp_avg = float((fl_brake_temperature + fr_brake_temperature+bl_brake_temperature + br_brake_temperature))/4.0;
   //Serial.print(fr_brake_temperature);
 }
-float Dash::BackBrakeTempAvg(){
-  back_brake_temp_avg = float((bl_brake_temperature + br_brake_temperature))/2.0;
-  //Serial.print(br_brake_temperature);
-}
+
 float Dash::WheelSpeedAvg(){
   wheel_speed_avg = float((fl_wheel_speed_signal + fr_wheel_speed_signal + bl_wheel_speed_signal + br_wheel_speed_signal))/4.0;
   //Serial.print(br_wheel_speed_signal);
@@ -77,8 +74,9 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     uint8_t(rgb[2] * 255)
   ));
 
-
+  float coolant_temp = static_cast<float>(coolant_temp_signal); 
   float batt_charge = static_cast<float>(bms_soc_signal); 
+  float max_cell_temp = static_cast<float>(max_cell_temp_signal);
 
   // float fl_wheel_speed = static_cast<float>(fl_wheel_speed_signal);
   // float fr_wheel_speed = static_cast<float>(fr_wheel_speed_signal);
@@ -89,7 +87,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
 
   // max is 600
   float batt_voltage = static_cast<float>(batt_voltage_signal);
-
+  float batt_temp = static_cast<float>(batt_temp_signal);
   float batt_current = static_cast<float>(batt_current_signal);
 
 
@@ -181,9 +179,11 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
 
   if(arr.Contains("No Errors") && arr.Length() > 1){
     arr.Remove("No Errors");
+    error_banner=1;
   }
   else if(!arr.Contains("No Errors") && arr.Length() == 0){
     arr.AddString("No Errors");
+    error_banner=0;
   }
 
 
@@ -207,7 +207,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
       uint8_t(mode * 255),
       uint8_t(mode * 255)
     ));
-
+    
     FWol = EVE_PrintF(
       FWol,
       LCD_WIDTH / 2,
@@ -293,12 +293,43 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   #endif
 
   #ifndef DEBUG_MODE
+    if(error_banner==1){
+      FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+    uint8_t(208),
+    uint8_t(52),
+    uint8_t(44)
+      ));
+
+      FWol = EVE_Filled_Rectangle(
+      FWol,
+      275,
+      LCD_HEIGHT - 425,
+      uint16_t(0 * (LCD_WIDTH - 50)) + 525,
+      LCD_HEIGHT-350);
+      
+      FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+    uint8_t(0),
+    uint8_t(0),
+    uint8_t(0)
+      ));
+      FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2,
+      (LCD_HEIGHT-387),
+      30,
+      EVE_OPT_CENTER,
+      "ERROR"
+    );
+    }
+    
+
+
     FWol = EVE_Filled_Rectangle(
     FWol,
-    70,
+    50,
     LCD_HEIGHT - 50,
-    uint16_t(0 * (LCD_WIDTH - 50)) + 100,
-    LCD_HEIGHT-50-(batt_height)*3);
+    uint16_t(0 * (LCD_WIDTH - 50)) + 120,
+    LCD_HEIGHT-50-(50)*3);
     
     FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
     uint8_t(0),
@@ -310,8 +341,22 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     FWol,
     725,
     LCD_HEIGHT - 50,
-    uint16_t(0 * (LCD_WIDTH - 50)) + 755,
-    LCD_HEIGHT-50-(batt_voltage/6)*3);
+    uint16_t(0 * (LCD_WIDTH - 50)) + 775,
+    LCD_HEIGHT-50-(batt_temp/6)*3);
+
+    FWol = EVE_Filled_Rectangle(
+    FWol,
+    655,
+    LCD_HEIGHT - 50,
+    uint16_t(0 * (LCD_WIDTH - 50)) + 705,
+    LCD_HEIGHT-50-(coolant_temp/6)*3);
+
+    FWol = EVE_Filled_Rectangle(
+    FWol,
+    585,
+    LCD_HEIGHT - 50,
+    uint16_t(0 * (LCD_WIDTH - 50)) + 635,
+    LCD_HEIGHT-50-(brake_temp_avg/6)*3);
 
     // FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
     //   uint8_t(mode * 255),
@@ -319,14 +364,14 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     //   uint8_t(mode * 255)
     // ));
 
-    FWol = EVE_PrintF(
-      FWol,
-      LCD_WIDTH / 2,
-      (LCD_HEIGHT / 2) - 126,
-      30,
-      EVE_OPT_CENTER,
-      "Display Mode: Non-Debug"
-    );
+    // FWol = EVE_PrintF(
+    //   FWol,
+    //   LCD_WIDTH / 2,
+    //   (LCD_HEIGHT / 2) - 126,
+    //   30,
+    //   EVE_OPT_CENTER,
+    //   "Display Mode: Non-Debug"
+    // );
 
     FWol = EVE_PrintF(
       FWol,
@@ -351,8 +396,17 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
       (LCD_HEIGHT / 2),
       1,
       EVE_OPT_CENTER,
-      "%.2f MPH",
+      "%.0f",
       wheel_speed_avg
+    );
+
+    FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2+65,
+      (LCD_HEIGHT / 2+15),
+      29,
+      EVE_OPT_CENTER,
+      "mph"
     );
 
     FWol = EVE_PrintF(
@@ -377,11 +431,29 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
 
     FWol = EVE_PrintF(
       FWol,
-      740,
+      750,
       (LCD_HEIGHT - 38),
       23,
       EVE_OPT_CENTER,
-      "Batt Volt"
+      "Batt T"
+    );
+
+    FWol = EVE_PrintF(
+      FWol,
+      680,
+      (LCD_HEIGHT - 38),
+      23,
+      EVE_OPT_CENTER,
+      "Cool T"
+    );
+
+    FWol = EVE_PrintF(
+      FWol,
+      610,
+      (LCD_HEIGHT - 38),
+      23,
+      EVE_OPT_CENTER,
+      "Brake T"
     );
 
 
