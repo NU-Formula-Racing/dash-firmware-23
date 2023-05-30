@@ -52,13 +52,14 @@ void Dash::Initialize() {
   lp_can_bus.RegisterRXMessage(rx_flwheel);
   lp_can_bus.RegisterRXMessage(rx_frwheel);
   lp_can_bus.RegisterRXMessage(rx_blwheel);
-  lp_can_bus.RegisterRXMessage(rx_brwheel);  
+  lp_can_bus.RegisterRXMessage(rx_brwheel); 
 
   // Light or Dark
   mode = 0;
   index = 0;
   arr.AddString("No Errors");
-  timer_group.AddTimer(10, [this]() { this->GetCAN(); });
+  timer_group.AddTimer(1, [this]() { this->GetCAN(); });
+  // timer_group.AddTimer(1,[this]() { this->WheelSpeedAvg(); });
   // timer_group.AddTimer(3000, [this]() { mode = 1 - mode; });
   timer_group.AddTimer(1000, [this]() { if(index >= arr.Length()-1) {index = 0;}
   else{index = index + 1;}});
@@ -501,7 +502,6 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
       34
     );
 
-
     FWol = EVE_PrintF(
       FWol,
       LCD_WIDTH / 2,
@@ -587,6 +587,28 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   Serial.print("\n");
   // Serial.print(arr.Length());
   // Serial.print("\n");
+  Serial.print("avg");
+  Serial.print("\n");
+  Serial.print(wheel_speed_avg);
+  Serial.print("\n");
+  Serial.print("fl");
+  Serial.print("\n");
+  Serial.print(fl_wheel_speed_signal);
+  Serial.print("\n");
+  Serial.print("fr");
+  Serial.print("\n");
+  Serial.print(fr_wheel_speed_signal);
+  Serial.print("\n");
+  Serial.print("bl");
+  Serial.print("\n");
+  Serial.print(bl_wheel_speed_signal);
+  Serial.print("\n");
+  Serial.print("br");
+  Serial.print("\n");
+  Serial.print(br_wheel_speed_signal);
+  Serial.print("\n");
+  Serial.println(rx_brwheel.GetTimeSinceLastReceive());
+
 
   timer_group.Tick(millis());
 

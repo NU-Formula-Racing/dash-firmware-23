@@ -64,10 +64,10 @@ private:
   CANRXMessage<1> rx_bmsstat{hp_can_bus, 0x241, bms_soc_signal};
   CANRXMessage<7> rx_bmsfaults{hp_can_bus, 0x250, fault_summary_signal, undervoltage_fault_signal, overvoltage_fault_signal, undertemp_fault_signal, overtemp_fault_signal, overcurrent_fault_signal, external_kill_fault_signal};
   CANRXMessage<1> rx_throttlestat{hp_can_bus, 0x301, tractive_system_status_signal};
-  CANRXMessage<2> rx_flwheel{lp_can_bus, 0x400, fl_wheel_speed_signal, fl_brake_temperature};
+  CANRXMessage<2> rx_flwheel{lp_can_bus, 0x400, [this](){ WheelSpeedAvg(); }, fl_wheel_speed_signal, fl_brake_temperature};
   CANRXMessage<2> rx_frwheel{lp_can_bus, 0x401, fr_wheel_speed_signal, fr_brake_temperature};
   CANRXMessage<2> rx_blwheel{lp_can_bus, 0x402, [this](){ BrakeTempAvg(); }, bl_wheel_speed_signal, bl_brake_temperature};
-  CANRXMessage<2> rx_brwheel{lp_can_bus, 0x403, [this](){ WheelSpeedAvg(); }, br_wheel_speed_signal, br_brake_temperature};
+  CANRXMessage<2> rx_brwheel{lp_can_bus, 0x403, br_wheel_speed_signal, br_brake_temperature};
 
   void GetCAN();
 };
