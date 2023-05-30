@@ -31,12 +31,12 @@ void Dash::GetCAN() {
   // radius = 32 + uint16_t(32 * float_signal);
 }
 float Dash::BrakeTempAvg(){
-  brake_temp_avg = float((fl_brake_temperature + fr_brake_temperature+bl_brake_temperature + br_brake_temperature))/4.0;
+  return brake_temp_avg = float((fl_brake_temperature + fr_brake_temperature+bl_brake_temperature + br_brake_temperature))/4.0;
   //Serial.print(fr_brake_temperature);
 }
 
 float Dash::WheelSpeedAvg(){
-  wheel_speed_avg = float((fl_wheel_speed_signal + fr_wheel_speed_signal + bl_wheel_speed_signal + br_wheel_speed_signal))/4.0;
+  return wheel_speed_avg = float((fl_wheel_speed_signal + fr_wheel_speed_signal + bl_wheel_speed_signal + br_wheel_speed_signal))/4.0;
   //Serial.print(br_wheel_speed_signal);
 }
 void Dash::Initialize() {
@@ -48,6 +48,7 @@ void Dash::Initialize() {
   hp_can_bus.RegisterRXMessage(rx_bmsstat);
   hp_can_bus.RegisterRXMessage(rx_bmsfaults);
   hp_can_bus.RegisterRXMessage(rx_throttlestat);
+  hp_can_bus.RegisterRXMessage(rx_throttlevals);
   lp_can_bus.RegisterRXMessage(rx_flwheel);
   lp_can_bus.RegisterRXMessage(rx_frwheel);
   lp_can_bus.RegisterRXMessage(rx_blwheel);
@@ -66,6 +67,31 @@ void Dash::Initialize() {
 uint16_t Dash::UpdateBackground(uint16_t FWol, uint8_t r, uint8_t g, uint8_t b) {
   return EVE_Cmd_Dat_0(FWol, EVE_ENC_CLEAR_COLOR_RGB(r, g, b));
 }
+
+uint8_t* Dash::BarColorPicker(uint16_t bad, uint16_t ok, float act_val, bool is_descending) {
+  uint8_t* bar_rgb = new uint8_t[3];
+  
+  if (is_descending) {
+    if (act_val > bad) {
+      bar_rgb[0] = 255; bar_rgb[1] = 0; bar_rgb[2] = 0;
+    } else if (act_val > ok) {
+      bar_rgb[0] = 255; bar_rgb[1] = 255; bar_rgb[2] = 0;
+    } else {
+      bar_rgb[0] = 34; bar_rgb[1] = 139; bar_rgb[2] = 34;
+    }
+  } else {
+    if (act_val < bad) {
+      bar_rgb[0] = 220; bar_rgb[1] = 220; bar_rgb[2] = 60;
+    } else if (act_val < ok) {
+      bar_rgb[0] = 255; bar_rgb[1] = 255; bar_rgb[2] = 0;
+    } else {
+      bar_rgb[0] = 124; bar_rgb[1] = 252; bar_rgb[2] = 0;
+    }
+  }
+  
+  return bar_rgb;
+}
+
 
 uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
@@ -89,7 +115,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   float batt_voltage = static_cast<float>(batt_voltage_signal);
   float batt_temp = static_cast<float>(batt_temp_signal);
   float batt_current = static_cast<float>(batt_current_signal);
-
+  Serial.print(batt_voltage);
 
   float fault_summary = static_cast<float>(fault_summary_signal);
   float undervoltage_fault = static_cast<float>(undervoltage_fault_signal);
@@ -99,6 +125,9 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   float overcurrent_fault = static_cast<float>(overcurrent_fault_signal);
   float external_kill = static_cast<float>(external_kill_fault_signal);
 
+
+  float accel_percent = static_cast<float>(accel_percent_signal);
+  float torque_limit = static_cast<float>(torque_limit_signal);
   // int tractive_system = static_cast<float>(tractive_system_status_signal);
 
   char tractive_system_status = 'O';
@@ -324,39 +353,122 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
     
 
 
+    FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+    uint8_t(rgb[0]),
+    uint8_t(rgb[1]),
+    uint8_t(rgb[2])
+  ));
     FWol = EVE_Filled_Rectangle(
     FWol,
     50,
     LCD_HEIGHT - 50,
-    uint16_t(0 * (LCD_WIDTH - 50)) + 120,
-    LCD_HEIGHT-50-(50)*3);
+    uint16_t(0 * (LCD_WIDTH - 50)) + 100,
+    LCD_HEIGHT-50-(batt_charge/6)*3);
+
+    FWol = EVE_Filled_Rectangle(
+    FWol,
+    150,
+    LCD_HEIGHT - 50,
+    uint16_t(0 * (LCD_WIDTH - 50)) + 200,
+    LCD_HEIGHT-50-(batt_voltage/6)*3);
     
     FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
     uint8_t(0),
     uint8_t(0),
     uint8_t(0)
   ));
-
+ 
+    batt_temp = 100;
+    uint8_t* bar_rgb = BarColorPicker(60, 50, batt_temp, true);
+    FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+    uint8_t(bar_rgb[0]),
+    uint8_t(bar_rgb[1]),
+    uint8_t(bar_rgb[2])
+  ));
+  //   Serial.print(bar_rgb[0]);
+  //   Serial.print(bar_rgb[1]);
+  //   Serial.print(bar_rgb[2]);
     FWol = EVE_Filled_Rectangle(
     FWol,
     725,
     LCD_HEIGHT - 50,
     uint16_t(0 * (LCD_WIDTH - 50)) + 775,
     LCD_HEIGHT-50-(batt_temp/6)*3);
-
+    
+    bar_rgb = BarColorPicker(60, 40, coolant_temp, true);
+    FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+    uint8_t(bar_rgb[0]),
+    uint8_t(bar_rgb[1]),
+    uint8_t(bar_rgb[2])
+  ));
     FWol = EVE_Filled_Rectangle(
     FWol,
     655,
     LCD_HEIGHT - 50,
     uint16_t(0 * (LCD_WIDTH - 50)) + 705,
-    LCD_HEIGHT-50-(coolant_temp/6)*3);
+    LCD_HEIGHT-50-(coolant_temp/2)*3);
 
+    FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+    uint8_t(0),
+    uint8_t(0),
+    uint8_t(0)
+  ));
     FWol = EVE_Filled_Rectangle(
     FWol,
     585,
     LCD_HEIGHT - 50,
     uint16_t(0 * (LCD_WIDTH - 50)) + 635,
     LCD_HEIGHT-50-(brake_temp_avg/6)*3);
+
+    FWol = EVE_Filled_Rectangle(
+    FWol,
+    35,
+    LCD_HEIGHT - 375,
+    uint16_t(0 * (LCD_WIDTH - 50)) + 765,
+    LCD_HEIGHT-425);
+
+
+  
+
+    FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+    uint8_t(255),
+    uint8_t(255),
+    uint8_t(255)));
+
+    FWol = EVE_Filled_Rectangle(
+    FWol,
+    40,
+    LCD_HEIGHT - 380,
+    uint16_t(0 * (LCD_WIDTH - 50)) + 760,
+    LCD_HEIGHT-420);
+
+    FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+    uint8_t(147),
+    uint8_t(112),
+    uint8_t(219)
+  ));
+    
+
+    // accel_percent = 50;
+    // torque_limit = 90;
+    FWol = EVE_Filled_Rectangle(
+    FWol,
+    40,
+    LCD_HEIGHT - 380,
+    uint16_t(35+(((accel_percent/100)*(torque_limit/100)))*765),
+    LCD_HEIGHT-420);
+
+    FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+    uint8_t(0),
+    uint8_t(0),
+    uint8_t(0)));
+
+    FWol = EVE_Filled_Rectangle(
+    FWol,
+    uint16_t(35+((torque_limit)/100)*740)-2,
+    LCD_HEIGHT - 380,
+    uint16_t(35+((torque_limit)/100)*740),
+    LCD_HEIGHT-420);
 
     // FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
     //   uint8_t(mode * 255),
@@ -411,11 +523,20 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
 
     FWol = EVE_PrintF(
       FWol,
-      85,
+      80,
       (LCD_HEIGHT - 38),
       23,
       EVE_OPT_CENTER,
       "Batt %%"
+    );
+
+    FWol = EVE_PrintF(
+      FWol,
+      175,
+      (LCD_HEIGHT - 38),
+      23,
+      EVE_OPT_CENTER,
+      "Batt V"
     );
 
     FWol = EVE_PrintF(
