@@ -21,30 +21,37 @@
 double rgb[3] = {0, 0, 1};
 uint16_t radius = 32;
 
-
-
-void Dash::GetCAN() {
+void Dash::GetCAN()
+{
   hp_can_bus.Tick();
   lp_can_bus.Tick();
+  Serial.printf("time since fl last receive: %d \n", rx_flwheel.GetTimeSinceLastReceive());
+  Serial.printf("time since fr last receive: %d \n", rx_frwheel.GetTimeSinceLastReceive());
+  Serial.printf("time since bl last receive: %d \n", rx_blwheel.GetTimeSinceLastReceive());
+  Serial.printf("time since br last receive: %d \n", rx_brwheel.GetTimeSinceLastReceive());
+
   // rgb[0] = float_signal;
   // rgb[2] = 1.0 - float_signal;
   // radius = 32 + uint16_t(32 * float_signal);
 }
-float Dash::BrakeTempAvg(){
-  return brake_temp_avg = float((fl_brake_temperature + fr_brake_temperature+bl_brake_temperature + br_brake_temperature))/4.0;
-  //Serial.print(fr_brake_temperature);
+float Dash::BrakeTempAvg()
+{
+  return brake_temp_avg = float((fl_brake_temperature + fr_brake_temperature + bl_brake_temperature + br_brake_temperature)) / 4.0;
+  // Serial.print(fr_brake_temperature);
 }
 
-float Dash::WheelSpeedAvg(){
-  return wheel_speed_avg = float((fl_wheel_speed_signal + fr_wheel_speed_signal + bl_wheel_speed_signal + br_wheel_speed_signal))/4.0;
-  //Serial.print(br_wheel_speed_signal);
+float Dash::WheelSpeedAvg()
+{
+  return wheel_speed_avg = float((fl_wheel_speed_signal + fr_wheel_speed_signal + bl_wheel_speed_signal + br_wheel_speed_signal)) / 4.0;
+  // Serial.print(br_wheel_speed_signal);
 }
-void Dash::Initialize() {
+void Dash::Initialize()
+{
   hp_can_bus.Initialize(ICAN::BaudRate::kBaud1M);
   lp_can_bus.Initialize(ICAN::BaudRate::kBaud1M);
-  hp_can_bus.RegisterRXMessage(rx_ptrain);  // Temporary workaround
+  hp_can_bus.RegisterRXMessage(rx_ptrain); // Temporary workaround
   hp_can_bus.RegisterRXMessage(rx_bmssoe);
-  //hp_can_bus.RegisterRXMessage(rx_bmssoe);
+  // hp_can_bus.RegisterRXMessage(rx_bmssoe);
   hp_can_bus.RegisterRXMessage(rx_bmsstat);
   hp_can_bus.RegisterRXMessage(rx_bmsfaults);
   hp_can_bus.RegisterRXMessage(rx_throttlestat);
@@ -52,57 +59,85 @@ void Dash::Initialize() {
   lp_can_bus.RegisterRXMessage(rx_flwheel);
   lp_can_bus.RegisterRXMessage(rx_frwheel);
   lp_can_bus.RegisterRXMessage(rx_blwheel);
-  lp_can_bus.RegisterRXMessage(rx_brwheel); 
+  lp_can_bus.RegisterRXMessage(rx_brwheel);
 
   // Light or Dark
   mode = 0;
   index = 0;
   arr.AddString("No Errors");
-  timer_group.AddTimer(1, [this]() { this->GetCAN(); });
+  timer_group.AddTimer(1, [this]()
+                       { this->GetCAN(); });
   // timer_group.AddTimer(1,[this]() { this->WheelSpeedAvg(); });
   // timer_group.AddTimer(3000, [this]() { mode = 1 - mode; });
-  timer_group.AddTimer(1000, [this]() { if(index >= arr.Length()-1) {index = 0;}
-  else{index = index + 1;}});
+  timer_group.AddTimer(1000, [this]()
+                       { if(index >= arr.Length()-1) {index = 0;}
+  else{index = index + 1;} });
 }
 
-uint16_t Dash::UpdateBackground(uint16_t FWol, uint8_t r, uint8_t g, uint8_t b) {
+uint16_t Dash::UpdateBackground(uint16_t FWol, uint8_t r, uint8_t g, uint8_t b)
+{
   return EVE_Cmd_Dat_0(FWol, EVE_ENC_CLEAR_COLOR_RGB(r, g, b));
 }
 
-uint8_t* Dash::BarColorPicker(uint16_t bad, uint16_t ok, float act_val, bool is_descending) {
-  uint8_t* bar_rgb = new uint8_t[3];
-  
-  if (is_descending) {
-    if (act_val > bad) {
-      bar_rgb[0] = 255; bar_rgb[1] = 0; bar_rgb[2] = 0;
-    } else if (act_val > ok) {
-      bar_rgb[0] = 255; bar_rgb[1] = 255; bar_rgb[2] = 0;
-    } else {
-      bar_rgb[0] = 34; bar_rgb[1] = 139; bar_rgb[2] = 34;
+uint8_t *Dash::BarColorPicker(uint16_t bad, uint16_t ok, float act_val, bool is_descending)
+{
+  uint8_t *bar_rgb = new uint8_t[3];
+
+  if (is_descending)
+  {
+    if (act_val > bad)
+    {
+      bar_rgb[0] = 255;
+      bar_rgb[1] = 0;
+      bar_rgb[2] = 0;
     }
-  } else {
-    if (act_val < bad) {
-      bar_rgb[0] = 220; bar_rgb[1] = 220; bar_rgb[2] = 60;
-    } else if (act_val < ok) {
-      bar_rgb[0] = 255; bar_rgb[1] = 255; bar_rgb[2] = 0;
-    } else {
-      bar_rgb[0] = 124; bar_rgb[1] = 252; bar_rgb[2] = 0;
+    else if (act_val > ok)
+    {
+      bar_rgb[0] = 255;
+      bar_rgb[1] = 255;
+      bar_rgb[2] = 0;
+    }
+    else
+    {
+      bar_rgb[0] = 34;
+      bar_rgb[1] = 139;
+      bar_rgb[2] = 34;
     }
   }
-  
+  else
+  {
+    if (act_val < bad)
+    {
+      bar_rgb[0] = 220;
+      bar_rgb[1] = 220;
+      bar_rgb[2] = 60;
+    }
+    else if (act_val < ok)
+    {
+      bar_rgb[0] = 255;
+      bar_rgb[1] = 255;
+      bar_rgb[2] = 0;
+    }
+    else
+    {
+      bar_rgb[0] = 124;
+      bar_rgb[1] = 252;
+      bar_rgb[2] = 0;
+    }
+  }
+
   return bar_rgb;
 }
 
-
-uint16_t Dash::AddToDisplayList(uint16_t FWol) {
+uint16_t Dash::AddToDisplayList(uint16_t FWol)
+{
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
-    uint8_t(rgb[0] * 255),
-    uint8_t(rgb[1] * 255),
-    uint8_t(rgb[2] * 255)
-  ));
+                                 uint8_t(rgb[0] * 255),
+                                 uint8_t(rgb[1] * 255),
+                                 uint8_t(rgb[2] * 255)));
 
-  float coolant_temp = static_cast<float>(coolant_temp_signal); 
-  float batt_charge = static_cast<float>(bms_soc_signal); 
+  float coolant_temp = static_cast<float>(coolant_temp_signal);
+  float batt_charge = static_cast<float>(bms_soc_signal);
   float max_cell_temp = static_cast<float>(max_cell_temp_signal);
 
   // float fl_wheel_speed = static_cast<float>(fl_wheel_speed_signal);
@@ -110,13 +145,12 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   // float bl_wheel_speed = static_cast<float>(bl_wheel_speed_signal);
   // float br_wheel_speed = static_cast<float>(br_wheel_speed_signal);
   // float wheel_speed_avg = static_cast<float>((fl_wheel_speed + fr_wheel_speed + bl_wheel_speed + br_wheel_speed) / 4.0);
-  
 
   // max is 600
   float batt_voltage = static_cast<float>(batt_voltage_signal);
   float batt_temp = static_cast<float>(batt_temp_signal);
   float batt_current = static_cast<float>(batt_current_signal);
-  Serial.print(batt_voltage);
+  // Serial.print(batt_voltage);
 
   float fault_summary = static_cast<float>(fault_summary_signal);
   float undervoltage_fault = static_cast<float>(undervoltage_fault_signal);
@@ -126,98 +160,113 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   float overcurrent_fault = static_cast<float>(overcurrent_fault_signal);
   float external_kill = static_cast<float>(external_kill_fault_signal);
 
-
   float accel_percent = static_cast<float>(accel_percent_signal);
   float torque_limit = static_cast<float>(torque_limit_signal);
   // int tractive_system = static_cast<float>(tractive_system_status_signal);
 
   char tractive_system_status = 'O';
 
-  if(tractive_system_status_signal == 0){
-    tractive_system_status = 'O';
-  }
-  else if(tractive_system_status_signal == 1){
-    tractive_system_status = 'N';
-  }
-  else if(tractive_system_status_signal == 2){
-    tractive_system_status = 'D';
-  }
-  else{
-    tractive_system_status = 'F';
-  }
+  // if (tractive_system_status_signal == 0)
+  // {
+  //   tractive_system_status = 'O';
+  // }
+  // else if (tractive_system_status_signal == 1)
+  // {
+  //   tractive_system_status = 'N';
+  // }
+  // else if (tractive_system_status_signal == 2)
+  // {
+  //   tractive_system_status = 'D';
+  // }
+  // else
+  // {
+  //   tractive_system_status = 'F';
+  // }
 
-  
+  // if (undervoltage_fault == 1 && !(arr.Contains("Undervoltage Fault")))
+  // {
+  //   arr.AddString("Undervoltage Fault");
+  // }
+  // else
+  // {
+  //   if (undervoltage_fault == 0 && arr.Contains("Undervoltage Fault"))
+  //   {
+  //     arr.Remove("Undervoltage Fault");
+  //   }
+  // }
 
-  if(undervoltage_fault == 1 && !(arr.Contains("Undervoltage Fault"))){
-    arr.AddString("Undervoltage Fault");
-  }
-  else{
-    if(undervoltage_fault == 0 && arr.Contains("Undervoltage Fault")){
-      arr.Remove("Undervoltage Fault");
-    }
-  }
+  // if (overvoltage_fault == 1 && !(arr.Contains("Overvoltage Fault")))
+  // {
+  //   arr.AddString("Overvoltage Fault");
+  // }
+  // else
+  // {
+  //   if (overvoltage_fault == 0 && arr.Contains("Overvoltage Fault"))
+  //   {
+  //     arr.Remove("Overvoltage Fault");
+  //   }
+  // }
 
+  // if (undertemp_fault == 1 && !(arr.Contains("Undertemp Fault")))
+  // {
+  //   arr.AddString("Undertemp Fault");
+  // }
+  // else
+  // {
+  //   if (undertemp_fault == 0 && arr.Contains("Undertemp Fault"))
+  //   {
+  //     arr.Remove("Undertemp Fault");
+  //   }
+  // }
 
-  if(overvoltage_fault == 1 && !(arr.Contains("Overvoltage Fault"))){
-    arr.AddString("Overvoltage Fault");
-  }
-  else{
-    if(overvoltage_fault == 0 && arr.Contains("Overvoltage Fault")){
-      arr.Remove("Overvoltage Fault");
-    }
-  }
+  // if (overtemp_fault == 1 && !(arr.Contains("Overtemp Fault")))
+  // {
+  //   arr.AddString("Overtemp Fault");
+  // }
+  // else
+  // {
+  //   if (overtemp_fault == 0 && arr.Contains("Overtemp Fault"))
+  //   {
+  //     arr.Remove("Overtemp Fault");
+  //   }
+  // }
 
+  // if (overcurrent_fault == 1 && !(arr.Contains("Overcurrent Fault")))
+  // {
+  //   arr.AddString("Overcurrent Fault");
+  // }
+  // else
+  // {
+  //   if (overcurrent_fault == 0 && arr.Contains("Overcurrent Fault"))
+  //   {
+  //     arr.Remove("Overcurrent Fault");
+  //   }
+  // }
 
-  if(undertemp_fault == 1 && !(arr.Contains("Undertemp Fault"))){
-    arr.AddString("Undertemp Fault");
-  }
-  else{
-    if(undertemp_fault == 0 && arr.Contains("Undertemp Fault")){
-      arr.Remove("Undertemp Fault");
-    }
-  }
+  // if (external_kill == 1 && !(arr.Contains("External Kill Fault")))
+  // {
+  //   arr.AddString("External Kill Fault");
+  // }
+  // else
+  // {
+  //   if (external_kill == 0 && (arr.Contains("External Kill Fault")))
+  //   {
+  //     arr.Remove("External Kill Fault");
+  //   }
+  // }
 
+  // if (arr.Contains("No Errors") && arr.Length() > 1)
+  // {
+  //   arr.Remove("No Errors");
+  //   error_banner = 1;
+  // }
+  // else if (!arr.Contains("No Errors") && arr.Length() == 0)
+  // {
+  //   arr.AddString("No Errors");
+  //   error_banner = 0;
+  // }
 
-  if(overtemp_fault == 1 && !(arr.Contains("Overtemp Fault"))){
-    arr.AddString("Overtemp Fault");
-  }
-  else{
-    if(overtemp_fault ==0 &&  arr.Contains("Overtemp Fault")){
-      arr.Remove("Overtemp Fault");
-    }
-  }
-
-
-  if(overcurrent_fault == 1 && !(arr.Contains("Overcurrent Fault"))){
-    arr.AddString("Overcurrent Fault");
-  }
-  else{
-    if(overcurrent_fault==0 && arr.Contains("Overcurrent Fault")){
-      arr.Remove("Overcurrent Fault");
-    }
-  }
-
-
-  if(external_kill == 1 && !(arr.Contains("External Kill Fault"))){
-    arr.AddString("External Kill Fault");
-  }
-  else{
-    if(external_kill == 0 && (arr.Contains("External Kill Fault"))){
-      arr.Remove("External Kill Fault");
-    }
-  }
-
-  if(arr.Contains("No Errors") && arr.Length() > 1){
-    arr.Remove("No Errors");
-    error_banner=1;
-  }
-  else if(!arr.Contains("No Errors") && arr.Length() == 0){
-    arr.AddString("No Errors");
-    error_banner=0;
-  }
-
-
-  int batt_height = (int) batt_charge;
+  int batt_height = (int)batt_charge;
   float motor_temp = static_cast<float>(motor_temp_signal);
 
   // Serial.print(batt_height);
@@ -231,386 +280,325 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol) {
   //   radius * 8
   // );
 
-  #ifdef DEBUG_MODE
-    FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
-      uint8_t(mode * 255),
-      uint8_t(mode * 255),
-      uint8_t(mode * 255)
-    ));
-    
-    FWol = EVE_PrintF(
+#ifdef DEBUG_MODE
+  FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+                                 uint8_t(mode * 255),
+                                 uint8_t(mode * 255),
+                                 uint8_t(mode * 255)));
+
+  FWol = EVE_PrintF(
       FWol,
       LCD_WIDTH / 2,
       (LCD_HEIGHT / 2) - 126,
       30,
       EVE_OPT_CENTER,
-      "Display Mode: Debug"
-    );
+      "Display Mode: Debug");
 
-    FWol = EVE_PrintF(
+  FWol = EVE_PrintF(
       FWol,
       LCD_WIDTH / 2,
       (LCD_HEIGHT / 2) - 84,
       24.3,
       EVE_OPT_CENTER,
       "Errors: %s",
-      arr[index]
-    );
+      arr[index]);
 
-    FWol = EVE_PrintF(
+  FWol = EVE_PrintF(
       FWol,
       LCD_WIDTH / 2,
       (LCD_HEIGHT / 2) - 42,
       24.3,
       EVE_OPT_CENTER,
       "Motor temp signal: %.2f C",
-      motor_temp
-    );
-    FWol = EVE_PrintF(
+      motor_temp);
+  FWol = EVE_PrintF(
       FWol,
       LCD_WIDTH / 2,
       (LCD_HEIGHT / 2),
       24.3,
       EVE_OPT_CENTER,
       "Wheel speed signal: %.2f MPH",
-      wheel_speed_avg
-    );
-    FWol = EVE_PrintF(
+      wheel_speed_avg);
+  FWol = EVE_PrintF(
       FWol,
       LCD_WIDTH / 2,
       (LCD_HEIGHT / 2) + 42,
       24.3,
       EVE_OPT_CENTER,
       "Battery voltage signal: %.2f V",
-      batt_voltage
-    );
-    FWol = EVE_PrintF(
+      batt_voltage);
+  FWol = EVE_PrintF(
       FWol,
       LCD_WIDTH / 2,
       (LCD_HEIGHT / 2) + 84,
       24.3,
       EVE_OPT_CENTER,
       "Battery current signal: %.2f A",
-      batt_current
-    );
-    FWol = EVE_PrintF(
+      batt_current);
+  FWol = EVE_PrintF(
       FWol,
       LCD_WIDTH / 2,
       (LCD_HEIGHT / 2) + 126,
       24.3,
       EVE_OPT_CENTER,
       "Battery charge: %.2f%%",
-      batt_charge
-    );
-    FWol = EVE_PrintF(
+      batt_charge);
+  FWol = EVE_PrintF(
       FWol,
       LCD_WIDTH / 2,
       (LCD_HEIGHT / 2) + 126,
       24.3,
       EVE_OPT_CENTER,
       "Front Brake Temp: %.2f%%",
-      front_brake_temp_avg
-    );
-    FWol = EVE_PrintF(
+      front_brake_temp_avg);
+  FWol = EVE_PrintF(
       FWol,
       LCD_WIDTH / 2,
       (LCD_HEIGHT / 2) + 126,
       24.3,
       EVE_OPT_CENTER,
       "Back Brake Temp: %.2f%%",
-      back_brake_temp_avg
-    );
-  #endif
+      back_brake_temp_avg);
+#endif
 
-  #ifndef DEBUG_MODE
-    if(error_banner==1){
-      FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
-    uint8_t(208),
-    uint8_t(52),
-    uint8_t(44)
-      ));
-
-      FWol = EVE_Filled_Rectangle(
-      FWol,
-      275,
-      LCD_HEIGHT - 425,
-      uint16_t(0 * (LCD_WIDTH - 50)) + 525,
-      LCD_HEIGHT-350);
-      
-      FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
-    uint8_t(0),
-    uint8_t(0),
-    uint8_t(0)
-      ));
-      FWol = EVE_PrintF(
-      FWol,
-      LCD_WIDTH / 2,
-      (LCD_HEIGHT-387),
-      30,
-      EVE_OPT_CENTER,
-      "ERROR"
-    );
-    }
-    
-
-
+#ifndef DEBUG_MODE
+  if (error_banner == 1)
+  {
     FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
-    uint8_t(rgb[0]),
-    uint8_t(rgb[1]),
-    uint8_t(rgb[2])
-  ));
-    FWol = EVE_Filled_Rectangle(
-    FWol,
-    50,
-    LCD_HEIGHT - 50,
-    uint16_t(0 * (LCD_WIDTH - 50)) + 100,
-    LCD_HEIGHT-50-(batt_charge/6)*3);
+                                   uint8_t(208),
+                                   uint8_t(52),
+                                   uint8_t(44)));
 
     FWol = EVE_Filled_Rectangle(
-    FWol,
-    150,
-    LCD_HEIGHT - 50,
-    uint16_t(0 * (LCD_WIDTH - 50)) + 200,
-    LCD_HEIGHT-50-(batt_voltage/6)*3);
-    
+        FWol,
+        275,
+        LCD_HEIGHT - 425,
+        uint16_t(0 * (LCD_WIDTH - 50)) + 525,
+        LCD_HEIGHT - 350);
+
     FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
-    uint8_t(0),
-    uint8_t(0),
-    uint8_t(0)
-  ));
- 
-    batt_temp = 100;
-    uint8_t* bar_rgb = BarColorPicker(60, 50, batt_temp, true);
-    FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
-    uint8_t(bar_rgb[0]),
-    uint8_t(bar_rgb[1]),
-    uint8_t(bar_rgb[2])
-  ));
+                                   uint8_t(0),
+                                   uint8_t(0),
+                                   uint8_t(0)));
+    FWol = EVE_PrintF(
+        FWol,
+        LCD_WIDTH / 2,
+        (LCD_HEIGHT - 387),
+        30,
+        EVE_OPT_CENTER,
+        "ERROR");
+  }
+
+  FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+                                 uint8_t(rgb[0]),
+                                 uint8_t(rgb[1]),
+                                 uint8_t(rgb[2])));
+  FWol = EVE_Filled_Rectangle(
+      FWol,
+      50,
+      LCD_HEIGHT - 50,
+      uint16_t(0 * (LCD_WIDTH - 50)) + 100,
+      LCD_HEIGHT - 50 - (batt_charge / 6) * 3);
+
+  FWol = EVE_Filled_Rectangle(
+      FWol,
+      150,
+      LCD_HEIGHT - 50,
+      uint16_t(0 * (LCD_WIDTH - 50)) + 200,
+      LCD_HEIGHT - 50 - (batt_voltage / 6) * 3);
+
+  FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+                                 uint8_t(0),
+                                 uint8_t(0),
+                                 uint8_t(0)));
+
+  batt_temp = 100;
+  uint8_t *bar_rgb = BarColorPicker(60, 50, batt_temp, true);
+  FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+                                 uint8_t(bar_rgb[0]),
+                                 uint8_t(bar_rgb[1]),
+                                 uint8_t(bar_rgb[2])));
   //   Serial.print(bar_rgb[0]);
   //   Serial.print(bar_rgb[1]);
   //   Serial.print(bar_rgb[2]);
-    FWol = EVE_Filled_Rectangle(
-    FWol,
-    725,
-    LCD_HEIGHT - 50,
-    uint16_t(0 * (LCD_WIDTH - 50)) + 775,
-    LCD_HEIGHT-50-(batt_temp/6)*3);
-    
-    bar_rgb = BarColorPicker(60, 40, coolant_temp, true);
-    FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
-    uint8_t(bar_rgb[0]),
-    uint8_t(bar_rgb[1]),
-    uint8_t(bar_rgb[2])
-  ));
-    FWol = EVE_Filled_Rectangle(
-    FWol,
-    655,
-    LCD_HEIGHT - 50,
-    uint16_t(0 * (LCD_WIDTH - 50)) + 705,
-    LCD_HEIGHT-50-(coolant_temp/2)*3);
+  FWol = EVE_Filled_Rectangle(
+      FWol,
+      725,
+      LCD_HEIGHT - 50,
+      uint16_t(0 * (LCD_WIDTH - 50)) + 775,
+      LCD_HEIGHT - 50 - (batt_temp / 6) * 3);
 
-    FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
-    uint8_t(0),
-    uint8_t(0),
-    uint8_t(0)
-  ));
-    FWol = EVE_Filled_Rectangle(
-    FWol,
-    585,
-    LCD_HEIGHT - 50,
-    uint16_t(0 * (LCD_WIDTH - 50)) + 635,
-    LCD_HEIGHT-50-(brake_temp_avg/6)*3);
+  bar_rgb = BarColorPicker(60, 40, coolant_temp, true);
+  FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+                                 uint8_t(bar_rgb[0]),
+                                 uint8_t(bar_rgb[1]),
+                                 uint8_t(bar_rgb[2])));
+  FWol = EVE_Filled_Rectangle(
+      FWol,
+      655,
+      LCD_HEIGHT - 50,
+      uint16_t(0 * (LCD_WIDTH - 50)) + 705,
+      LCD_HEIGHT - 50 - (coolant_temp / 2) * 3);
 
-    FWol = EVE_Filled_Rectangle(
-    FWol,
-    35,
-    LCD_HEIGHT - 375,
-    uint16_t(0 * (LCD_WIDTH - 50)) + 765,
-    LCD_HEIGHT-425);
+  FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+                                 uint8_t(0),
+                                 uint8_t(0),
+                                 uint8_t(0)));
+  FWol = EVE_Filled_Rectangle(
+      FWol,
+      585,
+      LCD_HEIGHT - 50,
+      uint16_t(0 * (LCD_WIDTH - 50)) + 635,
+      LCD_HEIGHT - 50 - (brake_temp_avg / 6) * 3);
 
+  FWol = EVE_Filled_Rectangle(
+      FWol,
+      35,
+      LCD_HEIGHT - 375,
+      uint16_t(0 * (LCD_WIDTH - 50)) + 765,
+      LCD_HEIGHT - 425);
 
-  
+  FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+                                 uint8_t(255),
+                                 uint8_t(255),
+                                 uint8_t(255)));
 
-    FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
-    uint8_t(255),
-    uint8_t(255),
-    uint8_t(255)));
+  FWol = EVE_Filled_Rectangle(
+      FWol,
+      40,
+      LCD_HEIGHT - 380,
+      uint16_t(0 * (LCD_WIDTH - 50)) + 760,
+      LCD_HEIGHT - 420);
 
-    FWol = EVE_Filled_Rectangle(
-    FWol,
-    40,
-    LCD_HEIGHT - 380,
-    uint16_t(0 * (LCD_WIDTH - 50)) + 760,
-    LCD_HEIGHT-420);
+  FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+                                 uint8_t(147),
+                                 uint8_t(112),
+                                 uint8_t(219)));
 
-    FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
-    uint8_t(147),
-    uint8_t(112),
-    uint8_t(219)
-  ));
-    
+  // accel_percent = 50;
+  // torque_limit = 90;
+  FWol = EVE_Filled_Rectangle(
+      FWol,
+      40,
+      LCD_HEIGHT - 380,
+      uint16_t(35 + (((accel_percent / 100) * (torque_limit / 100))) * 765),
+      LCD_HEIGHT - 420);
 
-    // accel_percent = 50;
-    // torque_limit = 90;
-    FWol = EVE_Filled_Rectangle(
-    FWol,
-    40,
-    LCD_HEIGHT - 380,
-    uint16_t(35+(((accel_percent/100)*(torque_limit/100)))*765),
-    LCD_HEIGHT-420);
+  FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+                                 uint8_t(0),
+                                 uint8_t(0),
+                                 uint8_t(0)));
 
-    FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
-    uint8_t(0),
-    uint8_t(0),
-    uint8_t(0)));
+  FWol = EVE_Filled_Rectangle(
+      FWol,
+      uint16_t(35 + ((torque_limit) / 100) * 740) - 2,
+      LCD_HEIGHT - 380,
+      uint16_t(35 + ((torque_limit) / 100) * 740),
+      LCD_HEIGHT - 420);
 
-    FWol = EVE_Filled_Rectangle(
-    FWol,
-    uint16_t(35+((torque_limit)/100)*740)-2,
-    LCD_HEIGHT - 380,
-    uint16_t(35+((torque_limit)/100)*740),
-    LCD_HEIGHT-420);
+  // FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+  //   uint8_t(mode * 255),
+  //   uint8_t(mode * 255),
+  //   uint8_t(mode * 255)
+  // ));
 
-    // FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
-    //   uint8_t(mode * 255),
-    //   uint8_t(mode * 255),
-    //   uint8_t(mode * 255)
-    // ));
+  // FWol = EVE_PrintF(
+  //   FWol,
+  //   LCD_WIDTH / 2,
+  //   (LCD_HEIGHT / 2) - 126,
+  //   30,
+  //   EVE_OPT_CENTER,
+  //   "Display Mode: Non-Debug"
+  // );
 
-    // FWol = EVE_PrintF(
-    //   FWol,
-    //   LCD_WIDTH / 2,
-    //   (LCD_HEIGHT / 2) - 126,
-    //   30,
-    //   EVE_OPT_CENTER,
-    //   "Display Mode: Non-Debug"
-    // );
-
-    FWol = EVE_PrintF(
+  FWol = EVE_PrintF(
       FWol,
       LCD_WIDTH / 2,
       (LCD_HEIGHT / 2) - 84,
       24.3,
       EVE_OPT_CENTER,
       "Errors: %s",
-      arr[index]
-    );
+      arr[index]);
 
-    FWol = EVE_RomFont(
+  FWol = EVE_RomFont(
       FWol,
       1,
-      34
-    );
+      34);
 
-    FWol = EVE_PrintF(
+  FWol = EVE_PrintF(
       FWol,
       LCD_WIDTH / 2,
       (LCD_HEIGHT / 2),
       1,
       EVE_OPT_CENTER,
       "%.0f",
-      wheel_speed_avg
-    );
+      wheel_speed_avg);
 
-    FWol = EVE_PrintF(
+  FWol = EVE_PrintF(
       FWol,
-      LCD_WIDTH / 2+65,
-      (LCD_HEIGHT / 2+15),
+      LCD_WIDTH / 2 + 65,
+      (LCD_HEIGHT / 2 + 15),
       29,
       EVE_OPT_CENTER,
-      "mph"
-    );
+      "mph");
 
-    FWol = EVE_PrintF(
+  FWol = EVE_PrintF(
       FWol,
       80,
       (LCD_HEIGHT - 38),
       23,
       EVE_OPT_CENTER,
-      "Batt %%"
-    );
+      "Batt %%");
 
-    FWol = EVE_PrintF(
+  FWol = EVE_PrintF(
       FWol,
       175,
       (LCD_HEIGHT - 38),
       23,
       EVE_OPT_CENTER,
-      "Batt V"
-    );
+      "Batt V");
 
-    FWol = EVE_PrintF(
+  FWol = EVE_PrintF(
       FWol,
       LCD_WIDTH / 2,
       (LCD_HEIGHT - 78),
       1,
       EVE_OPT_CENTER,
       "%c",
-      tractive_system_status
-    );
+      tractive_system_status);
 
-
-    FWol = EVE_PrintF(
+  FWol = EVE_PrintF(
       FWol,
       750,
       (LCD_HEIGHT - 38),
       23,
       EVE_OPT_CENTER,
-      "Batt T"
-    );
+      "Batt T");
 
-    FWol = EVE_PrintF(
+  FWol = EVE_PrintF(
       FWol,
       680,
       (LCD_HEIGHT - 38),
       23,
       EVE_OPT_CENTER,
-      "Cool T"
-    );
+      "Cool T");
 
-    FWol = EVE_PrintF(
+  FWol = EVE_PrintF(
       FWol,
       610,
       (LCD_HEIGHT - 38),
       23,
       EVE_OPT_CENTER,
-      "Brake T"
-    );
+      "Brake T");
 
+#endif
 
-
-  #endif
-
-
-  // Serial.print("Motor temp: ");
-  // Serial.print(motor_temp_signal);
-  Serial.print("\n");
-  // Serial.print(arr.Length());
-  // Serial.print("\n");
-  Serial.print("avg");
-  Serial.print("\n");
-  Serial.print(wheel_speed_avg);
-  Serial.print("\n");
-  Serial.print("fl");
-  Serial.print("\n");
-  Serial.print(fl_wheel_speed_signal);
-  Serial.print("\n");
-  Serial.print("fr");
-  Serial.print("\n");
-  Serial.print(fr_wheel_speed_signal);
-  Serial.print("\n");
-  Serial.print("bl");
-  Serial.print("\n");
-  Serial.print(bl_wheel_speed_signal);
-  Serial.print("\n");
-  Serial.print("br");
-  Serial.print("\n");
-  Serial.print(br_wheel_speed_signal);
-  Serial.print("\n");
-  Serial.println(rx_brwheel.GetTimeSinceLastReceive());
-
+  Serial.printf("time since fl last receive: %d \n", rx_flwheel.GetTimeSinceLastReceive());
+  Serial.printf("time since fr last receive: %d \n", rx_frwheel.GetTimeSinceLastReceive());
+  Serial.printf("time since bl last receive: %d \n", rx_blwheel.GetTimeSinceLastReceive());
+  Serial.printf("time since br last receive: %d \n", rx_brwheel.GetTimeSinceLastReceive());
 
   timer_group.Tick(millis());
 
-  return(FWol);
+  return (FWol);
 }
