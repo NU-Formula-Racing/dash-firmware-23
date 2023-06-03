@@ -55,6 +55,8 @@ uint8_t EVE_REG_Read_8(uint32_t REG_Address);
 uint16_t EVE_REG_Read_16(uint32_t REG_Address);
 uint32_t EVE_REG_Read_32(uint32_t REG_Address);
 void EVE_Read_Array(uint32_t EVE_Address, uint16_t length, uint8_t *destination);
+void StartEVEExecution(uint16_t SW_write_offset);
+std::tuple<uint16_t, bool> RunEVEExecution();
 #define ROBUST_EXECUTION_COMPLETE (1)
 #if (0 == ROBUST_EXECUTION_COMPLETE)
 #define Wait_for_EVE_Execution_Complete(SW_write_offset) while(EVE_REG_Read_16(EVE_REG_CMD_READ) != SW_write_offset)

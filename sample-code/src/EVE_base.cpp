@@ -80,6 +80,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <stdarg.h>
+#include <tuple>
 // Definitions for our circuit board and display.
 #include "CFA10100_defines.h"
 
@@ -104,7 +105,7 @@ void SerPrintFF(const __FlashStringHelper *fmt, ... )
   va_start(args, fmt );
   vsnprintf_P(tmp, 128, (const char *)fmt, args);
   va_end (args);
-  // Serial.print(tmp);
+  Serial.print(tmp);
   }
 //============================================================================
 void DBG_GEEK_Decode_Flash_Status(uint8_t EVE_flash_status)
@@ -527,6 +528,120 @@ uint16_t Reset_EVE_Coprocessor(void)
 // It seems to have some negative side effects.
 #define WRITE_AND_READ_SPI_VECTOR (0)
 //
+
+bool is_EVE_execution_complete = false;
+
+uint32_t EVE_execution_timeout = 100000;
+
+uint16_t
+    EVE_execution_read_address;
+  uint16_t
+    EVE_execution_write_address;
+
+  uint16_t
+    EVE_execution_reported_read_address;
+  uint16_t
+    EVE_execution_reported_write_address;
+  
+  uint16_t EVE_execution_SW_write_offset;
+
+void StartEVEExecution(uint16_t SW_write_offset)
+{
+  EVE_execution_timeout=100000;
+  EVE_execution_SW_write_offset = SW_write_offset;
+
+#if (0 != WRITE_AND_READ_SPI_VECTOR)
+  uint32_t
+    vector;
+  vector=0x0FAA55F0;
+#endif
+  
+  EVE_execution_reported_read_address=0;
+  EVE_execution_reported_write_address=0;
+
+}
+
+// Returns a tuple of {return_value, is_complete}; return_value is only valid when is_complete is true
+std::tuple<uint16_t, bool> RunEVEExecution()
+{
+  EVE_execution_read_address=EVE_REG_Read_16(EVE_REG_CMD_READ);
+    //Check for a coprocessor fault.
+    if(0xFFF == EVE_execution_read_address)
+      {
+      DBG_GEEK("Coprocessor Fault detected. Resetting coprocessor.\n");
+      //Return the new offset after resetting the coprocessor.
+      return(std::tuple<uint16_t, bool>{ Reset_EVE_Coprocessor(), true});
+      }
+    EVE_execution_write_address=EVE_REG_Read_16(EVE_REG_CMD_WRITE);
+    if((EVE_execution_read_address&0xF003)||(EVE_execution_write_address&0xF003)||(EVE_execution_SW_write_offset&0xF003)||(EVE_execution_write_address!=EVE_execution_SW_write_offset))
+      {
+      if((EVE_execution_reported_read_address!=EVE_execution_read_address)||(EVE_execution_reported_write_address!=EVE_execution_write_address))
+        {
+        if(EVE_execution_write_address!=EVE_execution_SW_write_offset)
+          {
+          DBG_GEEK("Write Mismatch: HDW_R=(%5u,0x%04X) HDW_W=(%5u,0x%04X) != SW_W=(%5u,0x%04X)\n",
+                       EVE_execution_read_address,EVE_execution_read_address,
+                       EVE_execution_write_address,EVE_execution_write_address,
+                       EVE_execution_SW_write_offset,EVE_execution_SW_write_offset);
+          }
+        if((EVE_execution_read_address&0xF003)||(EVE_execution_write_address&0xF003)||(EVE_execution_SW_write_offset&0xF003))
+          {
+          DBG_GEEK("DWORD Alignment: HDW_R=(%5u,0x%04X) HDW_W=(%5u,0x%04X) SW_W=(%5u,0x%04X)\n",
+                       EVE_execution_read_address,EVE_execution_read_address,
+                       EVE_execution_write_address,EVE_execution_write_address,
+                       EVE_execution_SW_write_offset,EVE_execution_SW_write_offset);
+          }
+        EVE_execution_reported_read_address=EVE_execution_read_address;
+        EVE_execution_reported_write_address=EVE_execution_write_address;
+        }
+      }
+#if (0 != WRITE_AND_READ_SPI_VECTOR)
+    //Write and read REG_MACRO_0 to debug SPI
+    //This appears to break at least the dot drawing of the touch calibrate routine.
+    //Best to leave it disabled unless you are using the scope to do low-level
+    //SPI hardware debugging.
+    //Write and read REG_MACRO_0 to debug SPI    
+    uint32_t
+      readback;
+    SET_DEBUG_LED;
+    EVE_REG_Write_32(REG_MACRO_0, vector);
+    CLR_DEBUG_LED;
+    readback=EVE_REG_Read_32(REG_MACRO_0);
+    if(readback!=vector)
+      {
+      DBG_GEEK("WRITE_AND_READ_SPI_VECTOR: 0x%08lX read: 0x%08lX\n",vector,readback);
+      }
+    vector^=0xFFFFFFFF;
+#endif
+    //Check timeout
+    if(0 != EVE_execution_timeout)
+      {
+      EVE_execution_timeout--;
+      }
+    else
+      {
+      DBG_GEEK("Wait_for_EVE_Execution_Complete: 100K tries, not complete.\n");
+      DBG_GEEK("  Pointers: HDW_R=(%5u,0x%04X) HDW_W=(%5u,0x%04X) != SW_W=(%5u,0x%04X)\n",
+               EVE_execution_read_address,EVE_execution_read_address,
+               EVE_execution_write_address,EVE_execution_write_address,
+               EVE_execution_SW_write_offset,EVE_execution_SW_write_offset);
+      //Experimental -- breaks touch calibration
+      //  DBG_GEEK("Coprocessor Fault detected. Resetting coprocessor.\n");
+      //  //Return the new offset after resetting the coprocessor.
+      //  return(Reset_EVE_Coprocessor());
+      EVE_execution_timeout=100000;
+      }
+
+      if (EVE_execution_read_address!=EVE_execution_SW_write_offset)
+      {
+        return std::tuple<uint16_t, bool>{0, false};
+      }
+      else
+      {
+        return std::tuple<uint16_t, bool>{EVE_execution_SW_write_offset, true};
+      }
+}
+
 #if (0 != ROBUST_EXECUTION_COMPLETE)
 uint16_t Wait_for_EVE_Execution_Complete(uint16_t SW_write_offset)
   {

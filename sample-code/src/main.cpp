@@ -88,37 +88,49 @@ void setup()
   dashboard.Initialize();
   DBG_STAT(" done.\n");
 
+  StartEVEExecution(FWo);
   DBG_STAT("Initialization complete, entering main loop.\n");
+}
+
+void RunDisplay()
+{
+  static std::tuple<uint16_t, bool> execution_result;
+  execution_result = RunEVEExecution();
+  if (std::get<1>(execution_result))
+  {
+    FWo = std::get<0>(execution_result);
+    // Start the display list
+    FWo = EVE_Cmd_Dat_0(FWo, (EVE_ENC_CMD_DLSTART));
+
+    // Set default clear color
+    if (dashboard.mode)
+    {
+      FWo = dashboard.UpdateBackground(FWo, 0, 0, 0);
+    }
+    else
+    {
+      FWo = dashboard.UpdateBackground(FWo, 255, 255, 255);
+    }
+
+    // Clear the screen
+    FWo = EVE_Cmd_Dat_0(FWo, EVE_ENC_CLEAR(1, 1, 1));
+
+    // //Fill background with white
+    // FWo = EVE_Filled_Rectangle(FWo, 0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1);
+
+    FWo = dashboard.AddToDisplayList(FWo);
+
+    // Show the display list
+    FWo = EVE_Cmd_Dat_0(FWo, EVE_ENC_DISPLAY());
+    FWo = EVE_Cmd_Dat_0(FWo, EVE_ENC_CMD_SWAP);
+    EVE_REG_Write_16(EVE_REG_CMD_WRITE, (FWo));
+    StartEVEExecution(FWo);
+  }
 }
 
 void loop()
 {
   dashboard.GetCAN();
-  /* FWo = Wait_for_EVE_Execution_Complete(FWo);
-
-  // Start the display list
-  FWo = EVE_Cmd_Dat_0(FWo, (EVE_ENC_CMD_DLSTART));
-
-  // Set default clear color
-  if (dashboard.mode)
-  {
-    FWo = dashboard.UpdateBackground(FWo, 0, 0, 0);
-  }
-  else
-  {
-    FWo = dashboard.UpdateBackground(FWo, 255, 255, 255);
-  }
-
-  // Clear the screen
-  FWo = EVE_Cmd_Dat_0(FWo, EVE_ENC_CLEAR(1, 1, 1));
-
-  // //Fill background with white
-  // FWo = EVE_Filled_Rectangle(FWo, 0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1);
-
-  FWo = dashboard.AddToDisplayList(FWo);
-
-  // Show the display list
-  FWo = EVE_Cmd_Dat_0(FWo, EVE_ENC_DISPLAY());
-  FWo = EVE_Cmd_Dat_0(FWo, EVE_ENC_CMD_SWAP);
-  EVE_REG_Write_16(EVE_REG_CMD_WRITE, (FWo)); */
+  RunDisplay();
+  // FWo = Wait_for_EVE_Execution_Complete(FWo);
 }
