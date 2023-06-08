@@ -17,6 +17,7 @@
 #include "mutable_array.h"
 
 // #define DEBUG_MODE
+// #define RPM
 
 double rgb[3] = {0, 0, 1};
 uint16_t radius = 32;
@@ -25,14 +26,6 @@ void Dash::GetCAN()
 {
   hp_can_bus.Tick();
   lp_can_bus.Tick();
-  Serial.printf("time since fl last receive: %d \n", rx_flwheel.GetTimeSinceLastReceive());
-  Serial.printf("time since fr last receive: %d \n", rx_frwheel.GetTimeSinceLastReceive());
-  Serial.printf("time since bl last receive: %d \n", rx_blwheel.GetTimeSinceLastReceive());
-  Serial.printf("time since br last receive: %d \n", rx_brwheel.GetTimeSinceLastReceive());
-
-  // rgb[0] = float_signal;
-  // rgb[2] = 1.0 - float_signal;
-  // radius = 32 + uint16_t(32 * float_signal);
 }
 float Dash::BrakeTempAvg()
 {
@@ -61,13 +54,14 @@ void Dash::Initialize()
   lp_can_bus.RegisterRXMessage(rx_blwheel);
   lp_can_bus.RegisterRXMessage(rx_brwheel);
 
+  inverter.RequestRPM(10);
+
   // Light or Dark
   mode = 0;
   index = 0;
   arr.AddString("No Errors");
   timer_group.AddTimer(1, [this]()
                        { this->GetCAN(); });
-  // timer_group.AddTimer(1,[this]() { this->WheelSpeedAvg(); });
   // timer_group.AddTimer(3000, [this]() { mode = 1 - mode; });
   timer_group.AddTimer(1000, [this]()
                        { if(index >= arr.Length()-1) {index = 0;}
@@ -140,12 +134,6 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
   float batt_charge = static_cast<float>(bms_soc_signal);
   float max_cell_temp = static_cast<float>(max_cell_temp_signal);
 
-  // float fl_wheel_speed = static_cast<float>(fl_wheel_speed_signal);
-  // float fr_wheel_speed = static_cast<float>(fr_wheel_speed_signal);
-  // float bl_wheel_speed = static_cast<float>(bl_wheel_speed_signal);
-  // float br_wheel_speed = static_cast<float>(br_wheel_speed_signal);
-  // float wheel_speed_avg = static_cast<float>((fl_wheel_speed + fr_wheel_speed + bl_wheel_speed + br_wheel_speed) / 4.0);
-
   // max is 600
   float batt_voltage = static_cast<float>(batt_voltage_signal);
   float batt_temp = static_cast<float>(batt_temp_signal);
@@ -166,105 +154,105 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
 
   char tractive_system_status = 'O';
 
-  // if (tractive_system_status_signal == 0)
-  // {
-  //   tractive_system_status = 'O';
-  // }
-  // else if (tractive_system_status_signal == 1)
-  // {
-  //   tractive_system_status = 'N';
-  // }
-  // else if (tractive_system_status_signal == 2)
-  // {
-  //   tractive_system_status = 'D';
-  // }
-  // else
-  // {
-  //   tractive_system_status = 'F';
-  // }
+  if (tractive_system_status_signal == 0)
+  {
+    tractive_system_status = 'O';
+  }
+  else if (tractive_system_status_signal == 1)
+  {
+    tractive_system_status = 'N';
+  }
+  else if (tractive_system_status_signal == 2)
+  {
+    tractive_system_status = 'D';
+  }
+  else
+  {
+    tractive_system_status = 'F';
+  }
 
-  // if (undervoltage_fault == 1 && !(arr.Contains("Undervoltage Fault")))
-  // {
-  //   arr.AddString("Undervoltage Fault");
-  // }
-  // else
-  // {
-  //   if (undervoltage_fault == 0 && arr.Contains("Undervoltage Fault"))
-  //   {
-  //     arr.Remove("Undervoltage Fault");
-  //   }
-  // }
+  if (undervoltage_fault == 1 && !(arr.Contains("Undervoltage Fault")))
+  {
+    arr.AddString("Undervoltage Fault");
+  }
+  else
+  {
+    if (undervoltage_fault == 0 && arr.Contains("Undervoltage Fault"))
+    {
+      arr.Remove("Undervoltage Fault");
+    }
+  }
 
-  // if (overvoltage_fault == 1 && !(arr.Contains("Overvoltage Fault")))
-  // {
-  //   arr.AddString("Overvoltage Fault");
-  // }
-  // else
-  // {
-  //   if (overvoltage_fault == 0 && arr.Contains("Overvoltage Fault"))
-  //   {
-  //     arr.Remove("Overvoltage Fault");
-  //   }
-  // }
+  if (overvoltage_fault == 1 && !(arr.Contains("Overvoltage Fault")))
+  {
+    arr.AddString("Overvoltage Fault");
+  }
+  else
+  {
+    if (overvoltage_fault == 0 && arr.Contains("Overvoltage Fault"))
+    {
+      arr.Remove("Overvoltage Fault");
+    }
+  }
 
-  // if (undertemp_fault == 1 && !(arr.Contains("Undertemp Fault")))
-  // {
-  //   arr.AddString("Undertemp Fault");
-  // }
-  // else
-  // {
-  //   if (undertemp_fault == 0 && arr.Contains("Undertemp Fault"))
-  //   {
-  //     arr.Remove("Undertemp Fault");
-  //   }
-  // }
+  if (undertemp_fault == 1 && !(arr.Contains("Undertemp Fault")))
+  {
+    arr.AddString("Undertemp Fault");
+  }
+  else
+  {
+    if (undertemp_fault == 0 && arr.Contains("Undertemp Fault"))
+    {
+      arr.Remove("Undertemp Fault");
+    }
+  }
 
-  // if (overtemp_fault == 1 && !(arr.Contains("Overtemp Fault")))
-  // {
-  //   arr.AddString("Overtemp Fault");
-  // }
-  // else
-  // {
-  //   if (overtemp_fault == 0 && arr.Contains("Overtemp Fault"))
-  //   {
-  //     arr.Remove("Overtemp Fault");
-  //   }
-  // }
+  if (overtemp_fault == 1 && !(arr.Contains("Overtemp Fault")))
+  {
+    arr.AddString("Overtemp Fault");
+  }
+  else
+  {
+    if (overtemp_fault == 0 && arr.Contains("Overtemp Fault"))
+    {
+      arr.Remove("Overtemp Fault");
+    }
+  }
 
-  // if (overcurrent_fault == 1 && !(arr.Contains("Overcurrent Fault")))
-  // {
-  //   arr.AddString("Overcurrent Fault");
-  // }
-  // else
-  // {
-  //   if (overcurrent_fault == 0 && arr.Contains("Overcurrent Fault"))
-  //   {
-  //     arr.Remove("Overcurrent Fault");
-  //   }
-  // }
+  if (overcurrent_fault == 1 && !(arr.Contains("Overcurrent Fault")))
+  {
+    arr.AddString("Overcurrent Fault");
+  }
+  else
+  {
+    if (overcurrent_fault == 0 && arr.Contains("Overcurrent Fault"))
+    {
+      arr.Remove("Overcurrent Fault");
+    }
+  }
 
-  // if (external_kill == 1 && !(arr.Contains("External Kill Fault")))
-  // {
-  //   arr.AddString("External Kill Fault");
-  // }
-  // else
-  // {
-  //   if (external_kill == 0 && (arr.Contains("External Kill Fault")))
-  //   {
-  //     arr.Remove("External Kill Fault");
-  //   }
-  // }
+  if (external_kill == 1 && !(arr.Contains("External Kill Fault")))
+  {
+    arr.AddString("External Kill Fault");
+  }
+  else
+  {
+    if (external_kill == 0 && (arr.Contains("External Kill Fault")))
+    {
+      arr.Remove("External Kill Fault");
+    }
+  }
 
-  // if (arr.Contains("No Errors") && arr.Length() > 1)
-  // {
-  //   arr.Remove("No Errors");
-  //   error_banner = 1;
-  // }
-  // else if (!arr.Contains("No Errors") && arr.Length() == 0)
-  // {
-  //   arr.AddString("No Errors");
-  //   error_banner = 0;
-  // }
+  if (arr.Contains("No Errors") && arr.Length() > 1)
+  {
+    arr.Remove("No Errors");
+    error_banner = 1;
+  }
+  else if (!arr.Contains("No Errors") && arr.Length() == 0)
+  {
+    arr.AddString("No Errors");
+    error_banner = 0;
+  }
 
   int batt_height = (int)batt_charge;
   float motor_temp = static_cast<float>(motor_temp_signal);
@@ -364,17 +352,17 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
 #ifndef DEBUG_MODE
   if (error_banner == 1)
   {
-    FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
-                                   uint8_t(208),
-                                   uint8_t(52),
-                                   uint8_t(44)));
+    // FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+    //                                uint8_t(208),
+    //                                uint8_t(52),
+    //                                uint8_t(44)));
 
-    FWol = EVE_Filled_Rectangle(
-        FWol,
-        275,
-        LCD_HEIGHT - 425,
-        uint16_t(0 * (LCD_WIDTH - 50)) + 525,
-        LCD_HEIGHT - 350);
+    // FWol = EVE_Filled_Rectangle(
+    //     FWol,
+    //     275,
+    //     LCD_HEIGHT - 425,
+    //     uint16_t(0 * (LCD_WIDTH - 50)) + 525,
+    //     LCD_HEIGHT - 350);
 
     FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
                                    uint8_t(0),
@@ -455,7 +443,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
       FWol,
       35,
       LCD_HEIGHT - 375,
-      uint16_t(0 * (LCD_WIDTH - 50)) + 765,
+      765,
       LCD_HEIGHT - 425);
 
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
@@ -467,7 +455,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
       FWol,
       40,
       LCD_HEIGHT - 380,
-      uint16_t(0 * (LCD_WIDTH - 50)) + 760,
+      760,
       LCD_HEIGHT - 420);
 
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
@@ -475,13 +463,11 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
                                  uint8_t(112),
                                  uint8_t(219)));
 
-  // accel_percent = 50;
-  // torque_limit = 90;
   FWol = EVE_Filled_Rectangle(
       FWol,
       40,
       LCD_HEIGHT - 380,
-      uint16_t(35 + (((accel_percent / 100) * (torque_limit / 100))) * 765),
+      uint16_t(40 + (((accel_percent / 100) * (torque_limit / 100))) * 720),
       LCD_HEIGHT - 420);
 
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
@@ -491,9 +477,9 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
 
   FWol = EVE_Filled_Rectangle(
       FWol,
-      uint16_t(35 + ((torque_limit) / 100) * 740) - 2,
+      uint16_t(40 + ((torque_limit) / 100) * 720) + 1,
       LCD_HEIGHT - 380,
-      uint16_t(35 + ((torque_limit) / 100) * 740),
+      uint16_t(40 + ((torque_limit) / 100) * 720) + 3,
       LCD_HEIGHT - 420);
 
   // FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
@@ -525,6 +511,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
       1,
       34);
 
+#ifndef RPM
   FWol = EVE_PrintF(
       FWol,
       LCD_WIDTH / 2,
@@ -533,7 +520,6 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
       EVE_OPT_CENTER,
       "%.0f",
       wheel_speed_avg);
-
   FWol = EVE_PrintF(
       FWol,
       LCD_WIDTH / 2 + 65,
@@ -541,6 +527,25 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
       29,
       EVE_OPT_CENTER,
       "mph");
+#endif
+
+#ifdef RPM
+  FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2,
+      (LCD_HEIGHT / 2),
+      1,
+      EVE_OPT_CENTER,
+      "%.0f",
+      inverter.GetRPM());
+  FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2 + 65,
+      (LCD_HEIGHT / 2 + 15),
+      29,
+      EVE_OPT_CENTER,
+      "rpm");
+#endif
 
   FWol = EVE_PrintF(
       FWol,

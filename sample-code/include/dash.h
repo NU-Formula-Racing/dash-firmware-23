@@ -3,6 +3,7 @@
 #include "teensy_can.h"
 #include "virtualTimer.h"
 #include "mutable_array.h"
+#include "inverter_driver.h"
 
 #ifndef __DASH_H__
 #define __DASH_H__
@@ -33,9 +34,10 @@ public:
   void GetCAN();
 
 private:
-  TeensyCAN<2> hp_can_bus{};
-  TeensyCAN<1> lp_can_bus{};
+  TeensyCAN<1> hp_can_bus{};
+  TeensyCAN<2> lp_can_bus{};
   VirtualTimerGroup timer_group{};
+  Inverter inverter{hp_can_bus};
   CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40), false> motor_temp_signal;
   CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(-40), false> coolant_temp_signal;
   CANSignal<float, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40), false> max_cell_temp_signal;
@@ -43,6 +45,7 @@ private:
   CANSignal<float, 24, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0), false> batt_voltage_signal;
   CANSignal<float, 40, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40), false> batt_temp_signal;
   CANSignal<float, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), true> accel_percent_signal;
+  CANSignal<float, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> brake_percent_signal;
   CANSignal<float, 16, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> torque_limit_signal;
   CANSignal<float, 48, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0), true> batt_current_signal;
   CANSignal<float, 0, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> fault_summary_signal;
@@ -61,9 +64,9 @@ private:
   CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false> bl_brake_temperature;
   CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false> br_brake_temperature;
   CANSignal<float, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> tractive_system_status_signal;
-  CANRXMessage<1> rx_ptrain{hp_can_bus, 0x420, motor_temp_signal};
-  CANRXMessage<2> rx_bmssoe{hp_can_bus, 0x240, batt_voltage_signal, batt_current_signal};
-  CANRXMessage<2> rx_throttlevals{hp_can_bus, 0x300, accel_percent_signal, torque_limit_signal};
+  CANRXMessage<2> rx_ptrain{hp_can_bus, 0x420, motor_temp_signal, coolant_temp_signal};
+  CANRXMessage<3> rx_bmssoe{hp_can_bus, 0x240, batt_voltage_signal, batt_current_signal, batt_temp_signal};
+  CANRXMessage<3> rx_throttlevals{hp_can_bus, 0x300, accel_percent_signal, brake_percent_signal, torque_limit_signal};
   CANRXMessage<1> rx_bmsstat{hp_can_bus, 0x241, bms_soc_signal};
   CANRXMessage<7> rx_bmsfaults{hp_can_bus, 0x250, fault_summary_signal, undervoltage_fault_signal, overvoltage_fault_signal, undertemp_fault_signal, overtemp_fault_signal, overcurrent_fault_signal, external_kill_fault_signal};
   CANRXMessage<1> rx_throttlestat{hp_can_bus, 0x301, tractive_system_status_signal};
@@ -75,6 +78,7 @@ private:
                              { BrakeTempAvg(); },
                              bl_wheel_speed_signal, bl_brake_temperature};
   CANRXMessage<2> rx_brwheel{lp_can_bus, 0x403, br_wheel_speed_signal, br_brake_temperature};
+  CANTXMessage<2> tx_throttlevals{lp_can_bus, 0x300, 2, 10, timer_group, accel_percent_signal, brake_percent_signal};
 };
 
 #endif
