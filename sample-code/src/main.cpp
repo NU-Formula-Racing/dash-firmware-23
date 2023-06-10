@@ -13,6 +13,7 @@
 
 Dash dashboard{};
 uint16_t FWo;
+static constexpr int IMD_LED_PIN = 18;
 
 void setup()
 {
@@ -31,6 +32,7 @@ void setup()
   pinMode(EVE_PD_NOT, OUTPUT);    // EVE Power Down (reset) input
   pinMode(EVE_CS_NOT, OUTPUT);    // EVE SPI bus CS# input
   pinMode(DEBUG_LED, OUTPUT);     // Optional pin for LED/oscilloscope debugging.
+  pinMode(IMD_LED_PIN, OUTPUT);
 
   // Initialize SPI
   SPI.begin();
@@ -92,6 +94,18 @@ void setup()
   DBG_STAT("Initialization complete, entering main loop.\n");
 }
 
+void CheckIMDStatus()
+{
+  if (dashboard.imd_state_signal == 1)
+  {
+    digitalWrite(IMD_LED_PIN, HIGH);
+  }
+  else
+  {
+    digitalWrite(IMD_LED_PIN, LOW);
+  }
+}
+
 void RunDisplay()
 {
   static std::tuple<uint16_t, bool> execution_result;
@@ -132,5 +146,6 @@ void loop()
 {
   dashboard.GetCAN();
   RunDisplay();
+  CheckIMDStatus();
   // FWo = Wait_for_EVE_Execution_Complete(FWo);
 }

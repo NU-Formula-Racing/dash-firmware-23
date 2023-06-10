@@ -32,6 +32,7 @@ public:
   uint8_t *BarColorPicker(uint16_t bad, uint16_t ok, float act_val, bool is_descending);
 
   void GetCAN();
+  CANSignal<uint8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> imd_state_signal;
 
 private:
   TeensyCAN<1> hp_can_bus{};
@@ -64,6 +65,7 @@ private:
   CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false> bl_brake_temperature;
   CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false> br_brake_temperature;
   CANSignal<float, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> tractive_system_status_signal;
+
   CANRXMessage<2> rx_ptrain{hp_can_bus, 0x420, motor_temp_signal, coolant_temp_signal};
   CANRXMessage<3> rx_bmssoe{hp_can_bus, 0x240, batt_voltage_signal, batt_current_signal, batt_temp_signal};
   CANRXMessage<3> rx_throttlevals{hp_can_bus, 0x300, accel_percent_signal, brake_percent_signal, torque_limit_signal};
@@ -78,6 +80,7 @@ private:
                              { BrakeTempAvg(); },
                              bl_wheel_speed_signal, bl_brake_temperature};
   CANRXMessage<2> rx_brwheel{lp_can_bus, 0x403, br_wheel_speed_signal, br_brake_temperature};
+  CANRXMessage<1> rx_imd_state{lp_can_bus, 0x600, imd_state_signal};
   CANTXMessage<2> tx_throttlevals{lp_can_bus, 0x300, 2, 10, timer_group, accel_percent_signal, brake_percent_signal};
 };
 

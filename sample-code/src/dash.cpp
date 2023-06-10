@@ -53,6 +53,7 @@ void Dash::Initialize()
   lp_can_bus.RegisterRXMessage(rx_frwheel);
   lp_can_bus.RegisterRXMessage(rx_blwheel);
   lp_can_bus.RegisterRXMessage(rx_brwheel);
+  lp_can_bus.RegisterRXMessage(rx_imd_state);
 
   inverter.RequestRPM(10);
 
@@ -400,7 +401,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
                                  uint8_t(0),
                                  uint8_t(0)));
 
-  batt_temp = 100;
+  // batt_temp = 100;
   uint8_t *bar_rgb = BarColorPicker(60, 50, batt_temp, true);
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
                                  uint8_t(bar_rgb[0]),
@@ -598,10 +599,10 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
 
 #endif
 
-  Serial.printf("time since fl last receive: %d \n", rx_flwheel.GetTimeSinceLastReceive());
-  Serial.printf("time since fr last receive: %d \n", rx_frwheel.GetTimeSinceLastReceive());
-  Serial.printf("time since bl last receive: %d \n", rx_blwheel.GetTimeSinceLastReceive());
-  Serial.printf("time since br last receive: %d \n", rx_brwheel.GetTimeSinceLastReceive());
+  // Serial.printf("time since fl last receive: %d \n", rx_flwheel.GetTimeSinceLastReceive());
+  // Serial.printf("time since fr last receive: %d \n", rx_frwheel.GetTimeSinceLastReceive());
+  // Serial.printf("time since bl last receive: %d \n", rx_blwheel.GetTimeSinceLastReceive());
+  // Serial.printf("time since br last receive: %d \n", rx_brwheel.GetTimeSinceLastReceive());
 
   timer_group.Tick(millis());
 
