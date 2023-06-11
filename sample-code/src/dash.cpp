@@ -103,9 +103,9 @@ uint8_t *Dash::BarColorPicker(uint16_t bad, uint16_t ok, float act_val, bool is_
   {
     if (act_val < bad)
     {
-      bar_rgb[0] = 220;
-      bar_rgb[1] = 220;
-      bar_rgb[2] = 60;
+      bar_rgb[0] = 255;
+      bar_rgb[1] = 0;
+      bar_rgb[2] = 0;
     }
     else if (act_val < ok)
     {
@@ -115,9 +115,9 @@ uint8_t *Dash::BarColorPicker(uint16_t bad, uint16_t ok, float act_val, bool is_
     }
     else
     {
-      bar_rgb[0] = 124;
-      bar_rgb[1] = 252;
-      bar_rgb[2] = 0;
+      bar_rgb[0] = 34;
+      bar_rgb[1] = 139;
+      bar_rgb[2] = 34;
     }
   }
 
@@ -378,23 +378,32 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
         "ERROR");
   }
 
+  batt_charge=100;
+  uint8_t *bar_rgb2 = BarColorPicker(10, 50, batt_charge, false);
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
-                                 uint8_t(rgb[0]),
-                                 uint8_t(rgb[1]),
-                                 uint8_t(rgb[2])));
+                                 uint8_t(bar_rgb2[0]),
+                                 uint8_t(bar_rgb2[1]),
+                                 uint8_t(bar_rgb2[2])));
+  batt_voltage = 100;
   FWol = EVE_Filled_Rectangle(
       FWol,
       50,
-      LCD_HEIGHT - 50,
+      LCD_HEIGHT - 60,
       uint16_t(0 * (LCD_WIDTH - 50)) + 100,
-      LCD_HEIGHT - 50 - (batt_charge / 6) * 3);
+      LCD_HEIGHT - 50 - (batt_charge*2.5));
 
+
+  uint8_t *bar_rgb3 = BarColorPicker(350, 500, batt_voltage, false);
+  FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
+                                 uint8_t(bar_rgb3[0]),
+                                 uint8_t(bar_rgb3[1]),
+                                 uint8_t(bar_rgb3[2])));
   FWol = EVE_Filled_Rectangle(
       FWol,
       150,
-      LCD_HEIGHT - 50,
+      LCD_HEIGHT - 60,
       uint16_t(0 * (LCD_WIDTH - 50)) + 200,
-      LCD_HEIGHT - 50 - (batt_voltage / 6) * 3);
+      LCD_HEIGHT - 50 - (batt_voltage / 6) * 2.5);
 
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
                                  uint8_t(0),
@@ -402,30 +411,30 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
                                  uint8_t(0)));
 
   // batt_temp = 100;
-  uint8_t *bar_rgb = BarColorPicker(60, 50, batt_temp, true);
+  uint8_t *bar_rgb4 = BarColorPicker(60, 50, batt_temp, true);
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
-                                 uint8_t(bar_rgb[0]),
-                                 uint8_t(bar_rgb[1]),
-                                 uint8_t(bar_rgb[2])));
+                                 uint8_t(bar_rgb4[0]),
+                                 uint8_t(bar_rgb4[1]),
+                                 uint8_t(bar_rgb4[2])));
   //   Serial.print(bar_rgb[0]);
   //   Serial.print(bar_rgb[1]);
   //   Serial.print(bar_rgb[2]);
   FWol = EVE_Filled_Rectangle(
       FWol,
       725,
-      LCD_HEIGHT - 50,
+      LCD_HEIGHT - 60,
       uint16_t(0 * (LCD_WIDTH - 50)) + 775,
       LCD_HEIGHT - 50 - (batt_temp / 6) * 3);
 
-  bar_rgb = BarColorPicker(60, 40, coolant_temp, true);
+  uint8_t *bar_rgb5 = BarColorPicker(60, 40, coolant_temp, true);
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
-                                 uint8_t(bar_rgb[0]),
-                                 uint8_t(bar_rgb[1]),
-                                 uint8_t(bar_rgb[2])));
+                                 uint8_t(bar_rgb5[0]),
+                                 uint8_t(bar_rgb5[1]),
+                                 uint8_t(bar_rgb5[2])));
   FWol = EVE_Filled_Rectangle(
       FWol,
       655,
-      LCD_HEIGHT - 50,
+      LCD_HEIGHT - 60,
       uint16_t(0 * (LCD_WIDTH - 50)) + 705,
       LCD_HEIGHT - 50 - (coolant_temp / 2) * 3);
 
@@ -436,7 +445,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
   FWol = EVE_Filled_Rectangle(
       FWol,
       585,
-      LCD_HEIGHT - 50,
+      LCD_HEIGHT - 60,
       uint16_t(0 * (LCD_WIDTH - 50)) + 635,
       LCD_HEIGHT - 50 - (brake_temp_avg / 6) * 3);
 
@@ -470,6 +479,15 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
       LCD_HEIGHT - 380,
       uint16_t(40 + (((accel_percent / 100) * (torque_limit / 100))) * 720),
       LCD_HEIGHT - 420);
+
+  FWol = EVE_PrintF(
+      FWol,
+      LCD_WIDTH / 2 + 65,
+      (LCD_HEIGHT - 350),
+      23,
+      EVE_OPT_CENTER,
+      "Torque: %.2f Nm",
+      accel_percent*torque_limit*230);
 
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
                                  uint8_t(0),
@@ -551,10 +569,27 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
   FWol = EVE_PrintF(
       FWol,
       80,
-      (LCD_HEIGHT - 38),
+      (LCD_HEIGHT - 48),
       23,
       EVE_OPT_CENTER,
       "Batt %%");
+  
+  FWol = EVE_PrintF(
+      FWol,
+      80,
+      (LCD_HEIGHT - 38),
+      23,
+      EVE_OPT_CENTER,
+      "%.2f",
+      batt_charge);
+  
+  FWol = EVE_PrintF(
+      FWol,
+      175,
+      (LCD_HEIGHT - 48),
+      23,
+      EVE_OPT_CENTER,
+      "Batt V");
 
   FWol = EVE_PrintF(
       FWol,
@@ -562,7 +597,8 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
       (LCD_HEIGHT - 38),
       23,
       EVE_OPT_CENTER,
-      "Batt V");
+      "%.2f",
+      batt_voltage);
 
   FWol = EVE_PrintF(
       FWol,
@@ -576,10 +612,28 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
   FWol = EVE_PrintF(
       FWol,
       750,
-      (LCD_HEIGHT - 38),
+      (LCD_HEIGHT - 48),
       23,
       EVE_OPT_CENTER,
       "Batt T");
+
+  FWol = EVE_PrintF(
+      FWol,
+      750,
+      (LCD_HEIGHT - 38),
+      23,
+      EVE_OPT_CENTER,
+      "%.2f",
+      batt_temp);
+
+
+  FWol = EVE_PrintF(
+      FWol,
+      680,
+      (LCD_HEIGHT - 48),
+      23,
+      EVE_OPT_CENTER,
+      "Cool T");
 
   FWol = EVE_PrintF(
       FWol,
@@ -587,7 +641,16 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
       (LCD_HEIGHT - 38),
       23,
       EVE_OPT_CENTER,
-      "Cool T");
+      "%.2f",
+      coolant_temp);
+
+  FWol = EVE_PrintF(
+      FWol,
+      610,
+      (LCD_HEIGHT - 48),
+      23,
+      EVE_OPT_CENTER,
+      "Brake T");
 
   FWol = EVE_PrintF(
       FWol,
@@ -595,7 +658,8 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
       (LCD_HEIGHT - 38),
       23,
       EVE_OPT_CENTER,
-      "Brake T");
+      "%.2f",
+      brake_temp_avg);
 
 #endif
 
