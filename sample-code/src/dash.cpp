@@ -173,15 +173,39 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
     tractive_system_status = 'F';
   }
 
-  if (undervoltage_fault == 1 && !(arr.Contains("Undervoltage Fault")))
+  if (release_accel_signal == 1 && !(arr.Contains("Release Accel to Request Torque")))
   {
-    arr.AddString("Undervoltage Fault");
+    arr.AddString("Release Accel to Request Torque");
   }
   else
   {
-    if (undervoltage_fault == 0 && arr.Contains("Undervoltage Fault"))
+    if (release_accel_signal == 0 && arr.Contains("Release Accel to Request Torque"))
     {
-      arr.Remove("Undervoltage Fault");
+      arr.Remove("Release Accel to Request Torque");
+    }
+  }
+
+  if (potentiometer_signal == 1 && !(arr.Contains("Throttle Sensors Disagree")))
+  {
+    arr.AddString("Throttle Sensors Disagree");
+  }
+  else
+  {
+    if (potentiometer_signal == 0 && arr.Contains("Throttle Sensors Disagree"))
+    {
+      arr.Remove("Throttle Sensors Disagree");
+    }
+  }
+
+  if (gnd_3v3_signal == 1 && !(arr.Contains("Throttle Sensors 3v3 or GND")))
+  {
+    arr.AddString("Throttle Sensors 3v3 or GND");
+  }
+  else
+  {
+    if (gnd_3v3_signal == 0 && arr.Contains("Throttle Sensors 3v3 or GND"))
+    {
+      arr.Remove("Throttle Sensors 3v3 or GND");
     }
   }
 
@@ -484,7 +508,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
       23,
       EVE_OPT_CENTER,
       "Torque: %.2f Nm",
-      0.01 * accel_percent * 0.01 * torque_limit * 230);
+      0.01 * torque_request_signal * 230);
 
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
                                  uint8_t(0),
