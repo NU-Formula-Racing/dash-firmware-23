@@ -42,7 +42,7 @@ void Dash::Initialize()
 {
   hp_can_bus.Initialize(ICAN::BaudRate::kBaud1M);
   lp_can_bus.Initialize(ICAN::BaudRate::kBaud1M);
-  lp_can_bus.RegisterRXMessage(rx_ptrain); // Temporary workaround
+  hp_can_bus.RegisterRXMessage(rx_ptrain); // Temporary workaround
   hp_can_bus.RegisterRXMessage(rx_bmssoe);
   // hp_can_bus.RegisterRXMessage(rx_bmssoe);
   hp_can_bus.RegisterRXMessage(rx_bmsstat);
@@ -136,13 +136,11 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
   float batt_charge = static_cast<float>(bms_soc_signal);
   float max_cell_temp = static_cast<float>(max_cell_temp_signal);
 
-
   // max is 600
   float batt_voltage = static_cast<float>(batt_voltage_signal);
   float batt_temp = static_cast<float>(batt_temp_signal);
   float batt_current = static_cast<float>(batt_current_signal);
   // Serial.print(batt_voltage);
-  
 
   float fault_summary = static_cast<float>(fault_summary_signal);
   float undervoltage_fault = static_cast<float>(undervoltage_fault_signal);
@@ -391,8 +389,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
       50,
       LCD_HEIGHT - 70,
       uint16_t(0 * (LCD_WIDTH - 50)) + 100,
-      LCD_HEIGHT - 60 - (batt_charge*2.5));
-
+      LCD_HEIGHT - 60 - (batt_charge * 2.5));
 
   uint8_t *bar_rgb3 = BarColorPicker(350, 500, batt_voltage, false);
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
@@ -410,7 +407,6 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
                                  uint8_t(0),
                                  uint8_t(0),
                                  uint8_t(0)));
-
 
   uint8_t *bar_rgb4 = BarColorPicker(60, 50, batt_temp, true);
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
@@ -488,7 +484,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
       23,
       EVE_OPT_CENTER,
       "Torque: %.2f Nm",
-      0.01*accel_percent*0.01*torque_limit*230);
+      0.01 * accel_percent * 0.01 * torque_limit * 230);
 
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
                                  uint8_t(0),
@@ -574,7 +570,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
       23,
       EVE_OPT_CENTER,
       "Batt %%");
-  
+
   FWol = EVE_PrintF(
       FWol,
       80,
@@ -583,7 +579,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
       EVE_OPT_CENTER,
       "%.2f",
       batt_charge);
-  
+
   FWol = EVE_PrintF(
       FWol,
       175,
@@ -626,7 +622,6 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
       EVE_OPT_CENTER,
       "%.2f",
       batt_temp);
-
 
   FWol = EVE_PrintF(
       FWol,
