@@ -66,7 +66,7 @@ private:
   CANSignal<float, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false> br_brake_temperature;
   CANSignal<float, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> tractive_system_status_signal;
 
-  CANRXMessage<2> rx_ptrain{hp_can_bus, 0x420, motor_temp_signal, coolant_temp_signal};
+  CANRXMessage<2> rx_ptrain{lp_can_bus, 0x420, motor_temp_signal, coolant_temp_signal};
   CANRXMessage<3> rx_bmssoe{hp_can_bus, 0x240, batt_voltage_signal, batt_current_signal, batt_temp_signal};
   CANRXMessage<3> rx_throttlevals{hp_can_bus, 0x300, accel_percent_signal, brake_percent_signal, torque_limit_signal};
   CANRXMessage<1> rx_bmsstat{hp_can_bus, 0x241, bms_soc_signal};

@@ -42,7 +42,7 @@ void Dash::Initialize()
 {
   hp_can_bus.Initialize(ICAN::BaudRate::kBaud1M);
   lp_can_bus.Initialize(ICAN::BaudRate::kBaud1M);
-  hp_can_bus.RegisterRXMessage(rx_ptrain); // Temporary workaround
+  lp_can_bus.RegisterRXMessage(rx_ptrain); // Temporary workaround
   hp_can_bus.RegisterRXMessage(rx_bmssoe);
   // hp_can_bus.RegisterRXMessage(rx_bmssoe);
   hp_can_bus.RegisterRXMessage(rx_bmsstat);
@@ -130,16 +130,19 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
                                  uint8_t(rgb[0] * 255),
                                  uint8_t(rgb[1] * 255),
                                  uint8_t(rgb[2] * 255)));
-
+  // Serial.print(coolant_temp_signal);
+  Serial.print("\n");
   float coolant_temp = static_cast<float>(coolant_temp_signal);
   float batt_charge = static_cast<float>(bms_soc_signal);
   float max_cell_temp = static_cast<float>(max_cell_temp_signal);
+
 
   // max is 600
   float batt_voltage = static_cast<float>(batt_voltage_signal);
   float batt_temp = static_cast<float>(batt_temp_signal);
   float batt_current = static_cast<float>(batt_current_signal);
   // Serial.print(batt_voltage);
+  
 
   float fault_summary = static_cast<float>(fault_summary_signal);
   float undervoltage_fault = static_cast<float>(undervoltage_fault_signal);
@@ -378,19 +381,17 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
         "ERROR");
   }
 
-  batt_charge=100;
   uint8_t *bar_rgb2 = BarColorPicker(10, 50, batt_charge, false);
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
                                  uint8_t(bar_rgb2[0]),
                                  uint8_t(bar_rgb2[1]),
                                  uint8_t(bar_rgb2[2])));
-  batt_voltage = 100;
   FWol = EVE_Filled_Rectangle(
       FWol,
       50,
-      LCD_HEIGHT - 60,
+      LCD_HEIGHT - 70,
       uint16_t(0 * (LCD_WIDTH - 50)) + 100,
-      LCD_HEIGHT - 50 - (batt_charge*2.5));
+      LCD_HEIGHT - 60 - (batt_charge*2.5));
 
 
   uint8_t *bar_rgb3 = BarColorPicker(350, 500, batt_voltage, false);
@@ -401,16 +402,16 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
   FWol = EVE_Filled_Rectangle(
       FWol,
       150,
-      LCD_HEIGHT - 60,
+      LCD_HEIGHT - 70,
       uint16_t(0 * (LCD_WIDTH - 50)) + 200,
-      LCD_HEIGHT - 50 - (batt_voltage / 6) * 2.5);
+      LCD_HEIGHT - 60 - (batt_voltage / 6) * 2.5);
 
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
                                  uint8_t(0),
                                  uint8_t(0),
                                  uint8_t(0)));
 
-  // batt_temp = 100;
+
   uint8_t *bar_rgb4 = BarColorPicker(60, 50, batt_temp, true);
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
                                  uint8_t(bar_rgb4[0]),
@@ -422,9 +423,9 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
   FWol = EVE_Filled_Rectangle(
       FWol,
       725,
-      LCD_HEIGHT - 60,
+      LCD_HEIGHT - 70,
       uint16_t(0 * (LCD_WIDTH - 50)) + 775,
-      LCD_HEIGHT - 50 - (batt_temp / 6) * 3);
+      LCD_HEIGHT - 60 - (batt_temp / 6) * 3);
 
   uint8_t *bar_rgb5 = BarColorPicker(60, 40, coolant_temp, true);
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
@@ -434,9 +435,9 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
   FWol = EVE_Filled_Rectangle(
       FWol,
       655,
-      LCD_HEIGHT - 60,
+      LCD_HEIGHT - 70,
       uint16_t(0 * (LCD_WIDTH - 50)) + 705,
-      LCD_HEIGHT - 50 - (coolant_temp / 2) * 3);
+      LCD_HEIGHT - 60 - (coolant_temp / 2) * 3);
 
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
                                  uint8_t(0),
@@ -445,9 +446,9 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
   FWol = EVE_Filled_Rectangle(
       FWol,
       585,
-      LCD_HEIGHT - 60,
+      LCD_HEIGHT - 70,
       uint16_t(0 * (LCD_WIDTH - 50)) + 635,
-      LCD_HEIGHT - 50 - (brake_temp_avg / 6) * 3);
+      LCD_HEIGHT - 60 - (brake_temp_avg / 6) * 3);
 
   FWol = EVE_Filled_Rectangle(
       FWol,
@@ -482,12 +483,12 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
 
   FWol = EVE_PrintF(
       FWol,
-      LCD_WIDTH / 2 + 65,
+      LCD_WIDTH / 2,
       (LCD_HEIGHT - 350),
       23,
       EVE_OPT_CENTER,
       "Torque: %.2f Nm",
-      accel_percent*torque_limit*230);
+      0.01*accel_percent*0.01*torque_limit*230);
 
   FWol = EVE_Cmd_Dat_0(FWol, EVE_ENC_COLOR_RGB(
                                  uint8_t(0),
@@ -541,7 +542,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
       wheel_speed_avg);
   FWol = EVE_PrintF(
       FWol,
-      LCD_WIDTH / 2 + 65,
+      LCD_WIDTH / 2 + 75,
       (LCD_HEIGHT / 2 + 15),
       29,
       EVE_OPT_CENTER,
@@ -577,7 +578,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
   FWol = EVE_PrintF(
       FWol,
       80,
-      (LCD_HEIGHT - 38),
+      (LCD_HEIGHT - 30),
       23,
       EVE_OPT_CENTER,
       "%.2f",
@@ -594,7 +595,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
   FWol = EVE_PrintF(
       FWol,
       175,
-      (LCD_HEIGHT - 38),
+      (LCD_HEIGHT - 30),
       23,
       EVE_OPT_CENTER,
       "%.2f",
@@ -620,7 +621,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
   FWol = EVE_PrintF(
       FWol,
       750,
-      (LCD_HEIGHT - 38),
+      (LCD_HEIGHT - 30),
       23,
       EVE_OPT_CENTER,
       "%.2f",
@@ -638,7 +639,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
   FWol = EVE_PrintF(
       FWol,
       680,
-      (LCD_HEIGHT - 38),
+      (LCD_HEIGHT - 30),
       23,
       EVE_OPT_CENTER,
       "%.2f",
@@ -655,7 +656,7 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
   FWol = EVE_PrintF(
       FWol,
       610,
-      (LCD_HEIGHT - 38),
+      (LCD_HEIGHT - 30),
       23,
       EVE_OPT_CENTER,
       "%.2f",
@@ -667,6 +668,8 @@ uint16_t Dash::AddToDisplayList(uint16_t FWol)
   // Serial.printf("time since fr last receive: %d \n", rx_frwheel.GetTimeSinceLastReceive());
   // Serial.printf("time since bl last receive: %d \n", rx_blwheel.GetTimeSinceLastReceive());
   // Serial.printf("time since br last receive: %d \n", rx_brwheel.GetTimeSinceLastReceive());
+
+  //   Serial.printf("time since coolant t last receive: %d \n", rx_ptrain.GetTimeSinceLastReceive());
 
   timer_group.Tick(millis());
 
