@@ -47,7 +47,7 @@ void Dash::Initialize()
     hp_can_bus.RegisterRXMessage(rx_bmssoe);
     // hp_can_bus.RegisterRXMessage(rx_bmssoe);
     hp_can_bus.RegisterRXMessage(rx_bmsstat);
-    hp_can_bus.RegisterRXMessage(rx_bmsfaults);
+    lp_can_bus.RegisterRXMessage(rx_bmsfaults);
     hp_can_bus.RegisterRXMessage(rx_throttlestat);
     hp_can_bus.RegisterRXMessage(rx_throttlevals);
     lp_can_bus.RegisterRXMessage(rx_flwheel);
