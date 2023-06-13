@@ -33,6 +33,7 @@ public:
 
     void GetCAN();
     CANSignal<uint8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> imd_state_signal;
+    CANSignal<uint8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> bms_state_signal;
 
 private:
     TeensyCAN<1> hp_can_bus{};
@@ -74,7 +75,7 @@ private:
     CANRXMessage<2> rx_ptrain{hp_can_bus, 0x420, motor_temp_signal, coolant_temp_signal};
     CANRXMessage<3> rx_bmssoe{hp_can_bus, 0x240, batt_voltage_signal, batt_current_signal, batt_temp_signal};
     CANRXMessage<4> rx_throttlevals{hp_can_bus, 0x300, accel_percent_signal, brake_percent_signal, torque_limit_signal, torque_request_signal};
-    CANRXMessage<1> rx_bmsstat{hp_can_bus, 0x241, bms_soc_signal};
+    CANRXMessage<2> rx_bmsstat{hp_can_bus, 0x241, bms_state_signal, bms_soc_signal};
     CANRXMessage<7> rx_bmsfaults{lp_can_bus, 0x250, fault_summary_signal, undervoltage_fault_signal, overvoltage_fault_signal, undertemp_fault_signal, overtemp_fault_signal, overcurrent_fault_signal, external_kill_fault_signal};
     CANRXMessage<4> rx_throttlestat{hp_can_bus, 0x301, tractive_system_status_signal, release_accel_signal, potentiometer_signal, gnd_3v3_signal};
     CANRXMessage<2> rx_flwheel{lp_can_bus, 0x400, [this]()

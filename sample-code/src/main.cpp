@@ -14,6 +14,7 @@
 Dash dashboard{};
 uint16_t FWo;
 static constexpr int IMD_LED_PIN = 18;
+static constexpr int BMS_LED_PIN = 19;
 
 void setup()
 {
@@ -33,6 +34,7 @@ void setup()
   pinMode(EVE_CS_NOT, OUTPUT);    // EVE SPI bus CS# input
   pinMode(DEBUG_LED, OUTPUT);     // Optional pin for LED/oscilloscope debugging.
   pinMode(IMD_LED_PIN, OUTPUT);
+  pinMode(BMS_LED_PIN, OUTPUT);
 
   // Initialize SPI
   SPI.begin();
@@ -100,9 +102,13 @@ void CheckIMDStatus()
   {
     digitalWrite(IMD_LED_PIN, HIGH);
   }
-  else
+}
+
+void CheckBMSStatus()
+{
+  if (dashboard.bms_state_signal == 4)
   {
-    digitalWrite(IMD_LED_PIN, LOW);
+    digitalWrite(BMS_LED_PIN, HIGH);
   }
 }
 
@@ -147,5 +153,6 @@ void loop()
   dashboard.GetCAN();
   RunDisplay();
   CheckIMDStatus();
+  CheckBMSStatus();
   // FWo = Wait_for_EVE_Execution_Complete(FWo);
 }
