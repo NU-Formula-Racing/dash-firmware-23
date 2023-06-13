@@ -53,6 +53,9 @@ uint16_t EVE_Open_Rectangle(uint16_t FWol,
                             uint16_t x1,
                             uint16_t y1,
                             uint16_t width);
+uint16_t EVE_RomFont(uint32_t FWol,
+                  uint32_t font,
+                  uint32_t romslot);
 uint16_t EVE_Text(uint16_t FWol,
                   uint16_t x,
                   uint16_t y,
